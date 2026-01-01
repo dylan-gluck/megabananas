@@ -1,8 +1,7 @@
 "use client";
 
-import { Upload, X } from "lucide-react";
+import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { useCallback, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type ImageUploadProps = {
@@ -38,7 +37,7 @@ export function ImageUpload({
         reader.readAsDataURL(file);
       });
     },
-    [value, onChange, maxImages],
+    [value, onChange, maxImages]
   );
 
   const handleDrop = useCallback(
@@ -47,7 +46,7 @@ export function ImageUpload({
       setIsDragging(false);
       handleFiles(e.dataTransfer.files);
     },
-    [handleFiles],
+    [handleFiles]
   );
 
   const removeImage = (index: number) => {
@@ -64,23 +63,26 @@ export function ImageUpload({
     input.click();
   };
 
+  const isFull = value.length >= maxImages;
+
   return (
     <div className={cn("space-y-3", className)}>
+      {/* Drop zone */}
       <div
         role="button"
         tabIndex={0}
         onDragOver={(e) => {
           e.preventDefault();
-          setIsDragging(true);
+          if (!isFull) setIsDragging(true);
         }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
         className={cn(
-          "border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors",
+          "relative rounded-xl border-2 border-dashed p-5 text-center cursor-pointer transition-all duration-200",
           isDragging
-            ? "border-primary bg-primary/5"
-            : "border-muted-foreground/25 hover:border-primary/50",
-          value.length >= maxImages && "opacity-50 cursor-not-allowed",
+            ? "border-primary bg-primary/5 scale-[1.01]"
+            : "border-border/50 hover:border-primary/40 hover:bg-muted/30",
+          isFull && "opacity-50 cursor-not-allowed pointer-events-none"
         )}
         onClick={openFilePicker}
         onKeyDown={(e) => {
@@ -90,35 +92,60 @@ export function ImageUpload({
           }
         }}
       >
-        <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-        <p className="text-sm text-muted-foreground">
-          Drop images here or click to upload
-        </p>
-        <p className="text-xs text-muted-foreground mt-1">
-          {value.length}/{maxImages} images
-        </p>
+        <div className="flex flex-col items-center gap-2">
+          <div
+            className={cn(
+              "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+              isDragging ? "bg-primary/15 text-primary" : "bg-muted/50 text-muted-foreground"
+            )}
+          >
+            <Upload className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">
+              {isDragging ? (
+                <span className="text-primary font-medium">Drop images here</span>
+              ) : (
+                <>
+                  <span className="text-foreground font-medium">Click to upload</span>{" "}
+                  or drag and drop
+                </>
+              )}
+            </p>
+            <p className="text-xs text-muted-foreground/70 mt-1">
+              {value.length}/{maxImages} images
+            </p>
+          </div>
+        </div>
       </div>
 
+      {/* Image grid */}
       {value.length > 0 && (
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-5 gap-2">
           {value.map((img, i) => (
-            <div key={`img-${img.slice(-20)}`} className="relative group">
+            <div
+              key={`img-${img.slice(-20)}`}
+              className="group relative aspect-square rounded-lg overflow-hidden border border-border/30 bg-muted/20 hover:border-border/60 transition-all"
+            >
+              <div className="absolute inset-0 checkerboard" />
               <img
                 src={img}
                 alt={`Upload ${i + 1}`}
-                className="w-full aspect-square object-cover rounded-md"
+                className="relative w-full h-full object-contain"
               />
-              <Button
-                variant="destructive"
-                size="icon"
-                className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+              <button
+                type="button"
+                className="absolute top-1 right-1 w-5 h-5 rounded-md bg-background/90 backdrop-blur-sm border border-border/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:border-destructive hover:text-destructive-foreground"
                 onClick={(e) => {
                   e.stopPropagation();
                   removeImage(i);
                 }}
               >
-                <X className="h-3 w-3" />
-              </Button>
+                <X className="w-3 h-3" />
+              </button>
+              <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-background/80 backdrop-blur-sm text-[9px] font-medium text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                {i + 1}
+              </div>
             </div>
           ))}
         </div>

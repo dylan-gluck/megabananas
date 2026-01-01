@@ -1,10 +1,17 @@
 "use client";
 
-import { Loader2, Pencil, Sparkles } from "lucide-react";
+import {
+  Loader2,
+  Pencil,
+  Sparkles,
+  Wand2,
+  ArrowRight,
+  ImagePlus,
+  Maximize2,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -12,14 +19,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { AssetPicker } from "./asset-picker";
 import { ImagePreview } from "./image-preview";
 import { ImageUpload } from "./image-upload";
+import { cn } from "@/lib/utils";
+
+type Mode = "generate" | "edit";
 
 export function CharacterWorkflow() {
-  const [mode, setMode] = useState<"generate" | "edit">("generate");
+  const [mode, setMode] = useState<Mode>("generate");
   const [prompt, setPrompt] = useState("");
   const [referenceImages, setReferenceImages] = useState<string[]>([]);
   const [sourceImage, setSourceImage] = useState<string>("");
@@ -108,113 +117,115 @@ export function CharacterWorkflow() {
   };
 
   return (
-    <div className="grid md:grid-cols-2 gap-6">
-      <div className="space-y-4">
-        <Tabs
-          value={mode}
-          onValueChange={(v) => setMode(v as "generate" | "edit")}
-        >
-          <TabsList className="w-full">
-            <TabsTrigger value="generate" className="flex-1">
-              <Sparkles className="h-4 w-4 mr-1" /> Generate
-            </TabsTrigger>
-            <TabsTrigger value="edit" className="flex-1">
-              <Pencil className="h-4 w-4 mr-1" /> Edit
-            </TabsTrigger>
-          </TabsList>
+    <div className="grid lg:grid-cols-[1fr,400px] gap-6">
+      {/* Left Panel - Controls */}
+      <div className="space-y-5 stagger-children">
+        {/* Mode Toggle */}
+        <div className="panel p-1 inline-flex gap-1">
+          <button
+            onClick={() => setMode("generate")}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+              mode === "generate"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            )}
+          >
+            <Sparkles className="w-4 h-4" />
+            Generate
+          </button>
+          <button
+            onClick={() => setMode("edit")}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+              mode === "edit"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            )}
+          >
+            <Pencil className="w-4 h-4" />
+            Edit
+          </button>
+        </div>
 
-          <TabsContent value="generate" className="space-y-4 mt-4">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm">Prompt</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Textarea
-                  placeholder="Describe your character... (e.g., 'A brave knight with silver armor and a red cape, pixel art style')"
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  rows={4}
-                />
-              </CardContent>
-            </Card>
+        {/* Edit Source Selection */}
+        {mode === "edit" && (
+          <div className="panel p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-md bg-accent/50 flex items-center justify-center">
+                  <ImagePlus className="w-3.5 h-3.5 text-accent-foreground" />
+                </div>
+                <h3 className="text-sm font-medium">Source Character</h3>
+              </div>
+            </div>
+            <AssetPicker
+              folder="characters"
+              value={sourceUrl}
+              onChange={(url, base64) => {
+                setSourceUrl(url);
+                if (base64) setSourceImage(base64);
+              }}
+            />
+            {sourceImage && !sourceUrl && (
+              <div className="pt-2 border-t border-border/50">
+                <p className="text-xs text-muted-foreground mb-2">
+                  Current source:
+                </p>
+                <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-border/50 checkerboard">
+                  <img
+                    src={sourceImage}
+                    alt="Source"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm">
-                  Reference Images (Optional)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ImageUpload
-                  value={referenceImages}
-                  onChange={setReferenceImages}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
+        {/* Prompt Section */}
+        <div className="panel p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-primary/15 flex items-center justify-center">
+              <Wand2 className="w-3.5 h-3.5 text-primary" />
+            </div>
+            <h3 className="text-sm font-medium">
+              {mode === "generate" ? "Prompt" : "Edit Instructions"}
+            </h3>
+          </div>
+          <Textarea
+            placeholder={
+              mode === "generate"
+                ? "Describe your character... e.g., 'A brave knight with silver armor and a red cape, pixel art style'"
+                : "Describe the changes... e.g., 'Add a wizard hat and change armor to purple'"
+            }
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            rows={4}
+            className="resize-none bg-muted/30 border-border/50 focus:border-primary/50 transition-colors"
+          />
+        </div>
 
-          <TabsContent value="edit" className="space-y-4 mt-4">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm">Select Character</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AssetPicker
-                  folder="characters"
-                  value={sourceUrl}
-                  onChange={(url, base64) => {
-                    setSourceUrl(url);
-                    if (base64) setSourceImage(base64);
-                  }}
-                />
-                {sourceImage && !sourceUrl && (
-                  <div className="mt-3">
-                    <p className="text-xs text-muted-foreground mb-2">
-                      Current source:
-                    </p>
-                    <img
-                      src={sourceImage}
-                      alt="Source"
-                      className="h-24 rounded-md"
-                    />
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+        {/* Reference Images */}
+        <div className="panel p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-muted flex items-center justify-center">
+                <ImagePlus className="w-3.5 h-3.5 text-muted-foreground" />
+              </div>
+              <h3 className="text-sm font-medium">Reference Images</h3>
+            </div>
+            <span className="text-xs text-muted-foreground">Optional</span>
+          </div>
+          <ImageUpload value={referenceImages} onChange={setReferenceImages} />
+        </div>
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm">Edit Instructions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Textarea
-                  placeholder="Describe the changes... (e.g., 'Add a wizard hat and change armor to purple')"
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  rows={4}
-                />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm">
-                  Reference Images (Optional)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ImageUpload
-                  value={referenceImages}
-                  onChange={setReferenceImages}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        <div className="flex gap-3">
+        {/* Action Bar */}
+        <div className="flex items-center gap-3">
           <Select value={aspectRatio} onValueChange={setAspectRatio}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-28 bg-muted/30 border-border/50">
+              <Maximize2 className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -229,64 +240,91 @@ export function CharacterWorkflow() {
           <Button
             onClick={mode === "generate" ? handleGenerate : handleEdit}
             disabled={loading}
-            className="flex-1"
+            size="lg"
+            className="flex-1 h-11 font-medium shadow-sm glow-primary-sm hover:glow-primary transition-shadow"
           >
             {loading ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 {mode === "generate" ? "Generating..." : "Editing..."}
-              </>
-            ) : mode === "generate" ? (
-              <>
-                <Sparkles className="h-4 w-4 mr-2" /> Generate
               </>
             ) : (
               <>
-                <Pencil className="h-4 w-4 mr-2" /> Apply Edit
+                {mode === "generate" ? (
+                  <Sparkles className="w-4 h-4 mr-2" />
+                ) : (
+                  <Pencil className="w-4 h-4 mr-2" />
+                )}
+                {mode === "generate" ? "Generate Character" : "Apply Edit"}
+                <ArrowRight className="w-4 h-4 ml-2" />
               </>
             )}
           </Button>
         </div>
       </div>
 
-      <div>
-        <Card className="h-full">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Result</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {result ? (
-              <div className="space-y-3">
-                <ImagePreview
-                  image={result.image}
-                  filename={result.filename}
-                  saved={true}
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={useResultAsSource}
-                  className="w-full"
-                >
-                  <Pencil className="h-4 w-4 mr-1" /> Edit This Character
-                </Button>
-              </div>
-            ) : (
-              <div className="h-64 flex items-center justify-center text-muted-foreground">
-                {loading ? (
-                  <div className="text-center">
-                    <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
-                    <p className="text-sm">Creating your character...</p>
-                  </div>
-                ) : (
-                  <p className="text-sm">
-                    Generated character will appear here
-                  </p>
-                )}
-              </div>
+      {/* Right Panel - Output */}
+      <div className="lg:sticky lg:top-6 lg:h-fit">
+        <div className="panel p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium">Output</h3>
+            {result && (
+              <span className="text-xs text-emerald-500 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                Generated
+              </span>
             )}
-          </CardContent>
-        </Card>
+          </div>
+
+          {result ? (
+            <div className="space-y-4 animate-scale-in">
+              <ImagePreview
+                image={result.image}
+                filename={result.filename}
+                saved={true}
+              />
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={useResultAsSource}
+                className="w-full"
+              >
+                <Pencil className="w-3.5 h-3.5 mr-1.5" />
+                Continue Editing
+              </Button>
+            </div>
+          ) : (
+            <div
+              className={cn(
+                "aspect-square rounded-xl border-2 border-dashed border-border/50 flex flex-col items-center justify-center text-muted-foreground",
+                loading && "border-primary/30"
+              )}
+            >
+              {loading ? (
+                <div className="text-center space-y-3">
+                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto pulse-glow">
+                    <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      Creating your character...
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      This may take a moment
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center space-y-2">
+                  <div className="w-12 h-12 rounded-xl bg-muted/50 flex items-center justify-center mx-auto">
+                    <Sparkles className="w-6 h-6" />
+                  </div>
+                  <p className="text-sm">Your character will appear here</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
