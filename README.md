@@ -2,6 +2,8 @@
 
 Internal tool for generating and editing character images and sprite sheets using Gemini image models.
 
+![Screenshot of v0](screenshot.png)
+
 ## Setup
 
 1. Install dependencies:
