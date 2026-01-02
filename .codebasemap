@@ -2,9 +2,9 @@
   "metadata": {
     "version": 1,
     "root": "/Users/dylan/Workspace/vibe/megabananas",
-    "createdAt": "2026-01-02T16:24:03.914Z",
-    "updatedAt": "2026-01-02T16:24:03.914Z",
-    "totalFiles": 92
+    "createdAt": "2026-01-02T19:44:36.024Z",
+    "updatedAt": "2026-01-02T19:44:36.024Z",
+    "totalFiles": 101
   },
   "tree": {
     "name": "megabananas",
@@ -42,6 +42,16 @@
                 "name": "assets",
                 "type": "dir",
                 "children": [
+                  {
+                    "name": "[id]",
+                    "type": "dir",
+                    "children": [
+                      {
+                        "name": "route.ts",
+                        "type": "file"
+                      }
+                    ]
+                  },
                   {
                     "name": "route.ts",
                     "type": "file"
@@ -95,6 +105,16 @@
                 ]
               },
               {
+                "name": "gen-animation",
+                "type": "dir",
+                "children": [
+                  {
+                    "name": "route.ts",
+                    "type": "file"
+                  }
+                ]
+              },
+              {
                 "name": "gen-character",
                 "type": "dir",
                 "children": [
@@ -124,6 +144,16 @@
                     "children": [
                       {
                         "name": "assets",
+                        "type": "dir",
+                        "children": [
+                          {
+                            "name": "route.ts",
+                            "type": "file"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "references",
                         "type": "dir",
                         "children": [
                           {
@@ -169,6 +199,10 @@
                 "type": "dir",
                 "children": [
                   {
+                    "name": "asset-metadata-panel.tsx",
+                    "type": "file"
+                  },
+                  {
                     "name": "edit-character-form.tsx",
                     "type": "file"
                   },
@@ -183,6 +217,10 @@
                   {
                     "name": "new-character-form.tsx",
                     "type": "file"
+                  },
+                  {
+                    "name": "new-frame-form.tsx",
+                    "type": "file"
                   }
                 ]
               },
@@ -192,6 +230,10 @@
                 "children": [
                   {
                     "name": "animation-view.tsx",
+                    "type": "file"
+                  },
+                  {
+                    "name": "asset-view.tsx",
                     "type": "file"
                   },
                   {
@@ -240,6 +282,10 @@
               },
               {
                 "name": "aspect-ratio.tsx",
+                "type": "file"
+              },
+              {
+                "name": "asset-thumbnail.tsx",
                 "type": "file"
               },
               {
@@ -375,6 +421,10 @@
                 "type": "file"
               },
               {
+                "name": "reference-image-picker.tsx",
+                "type": "file"
+              },
+              {
                 "name": "resizable.tsx",
                 "type": "file"
               },
@@ -485,6 +535,10 @@
             "type": "dir",
             "children": [
               {
+                "name": "animation-prompts.ts",
+                "type": "file"
+              },
+              {
                 "name": "character-presets.ts",
                 "type": "file"
               }
@@ -521,14 +575,17 @@
   "nodes": [
     "app/api/animations/[id]/route.ts",
     "app/api/animations/route.ts",
+    "app/api/assets/[id]/route.ts",
     "app/api/assets/route.ts",
     "app/api/characters/[id]/route.ts",
     "app/api/characters/route.ts",
     "app/api/edit-character/route.ts",
     "app/api/frames/[id]/route.ts",
+    "app/api/gen-animation/route.ts",
     "app/api/gen-character/route.ts",
     "app/api/gen-sprite/route.ts",
     "app/api/projects/[id]/assets/route.ts",
+    "app/api/projects/[id]/references/route.ts",
     "app/api/projects/[id]/route.ts",
     "app/api/projects/route.ts",
     "app/layout.tsx",
@@ -536,13 +593,16 @@
     "components/asset-picker.tsx",
     "components/character-workflow.tsx",
     "components/ide/app-layout.tsx",
+    "components/ide/forms/asset-metadata-panel.tsx",
     "components/ide/forms/edit-character-form.tsx",
     "components/ide/forms/generate-variation-form.tsx",
     "components/ide/forms/new-animation-form.tsx",
     "components/ide/forms/new-character-form.tsx",
+    "components/ide/forms/new-frame-form.tsx",
     "components/ide/left-sidebar.tsx",
     "components/ide/right-sidebar.tsx",
     "components/ide/views/animation-view.tsx",
+    "components/ide/views/asset-view.tsx",
     "components/ide/views/character-view.tsx",
     "components/ide/views/project-view.tsx",
     "components/ide/workspace.tsx",
@@ -553,6 +613,7 @@
     "components/ui/alert-dialog.tsx",
     "components/ui/alert.tsx",
     "components/ui/aspect-ratio.tsx",
+    "components/ui/asset-thumbnail.tsx",
     "components/ui/avatar.tsx",
     "components/ui/badge.tsx",
     "components/ui/breadcrumb.tsx",
@@ -586,6 +647,7 @@
     "components/ui/popover.tsx",
     "components/ui/progress.tsx",
     "components/ui/radio-group.tsx",
+    "components/ui/reference-image-picker.tsx",
     "components/ui/resizable.tsx",
     "components/ui/scroll-area.tsx",
     "components/ui/select.tsx",
@@ -604,6 +666,7 @@
     "components/ui/toggle.tsx",
     "components/ui/tooltip.tsx",
     "hooks/use-mobile.ts",
+    "lib/config/animation-prompts.ts",
     "lib/config/character-presets.ts",
     "lib/gemini.ts",
     "lib/prisma.ts",
@@ -639,6 +702,10 @@
     },
     {
       "from": "components/ide/right-sidebar.tsx",
+      "to": "components/ide/forms/asset-metadata-panel.tsx"
+    },
+    {
+      "from": "components/ide/right-sidebar.tsx",
       "to": "components/ide/forms/edit-character-form.tsx"
     },
     {
@@ -654,8 +721,16 @@
       "to": "components/ide/forms/new-character-form.tsx"
     },
     {
+      "from": "components/ide/right-sidebar.tsx",
+      "to": "components/ide/forms/new-frame-form.tsx"
+    },
+    {
       "from": "components/ide/workspace.tsx",
       "to": "components/ide/views/animation-view.tsx"
+    },
+    {
+      "from": "components/ide/workspace.tsx",
+      "to": "components/ide/views/asset-view.tsx"
     },
     {
       "from": "components/ide/workspace.tsx",
@@ -672,6 +747,10 @@
     {
       "from": "components/sprite-workflow.tsx",
       "to": "components/image-preview.tsx"
+    },
+    {
+      "from": "lib/config/animation-prompts.ts",
+      "to": "lib/config/character-presets.ts"
     }
   ],
   "files": {
@@ -768,6 +847,60 @@
             {
               "name": "request",
               "type": "Request"
+            }
+          ],
+          "isAsync": true,
+          "isExported": true
+        }
+      ],
+      "classes": [],
+      "constants": []
+    },
+    "app/api/assets/[id]/route.ts": {
+      "imports": [
+        {
+          "from": "next/server",
+          "kind": "import",
+          "imported": [
+            "NextRequest",
+            "NextResponse"
+          ]
+        },
+        {
+          "from": "@/lib/prisma",
+          "kind": "import",
+          "imported": [
+            "prisma"
+          ]
+        }
+      ],
+      "dependencies": [],
+      "functions": [
+        {
+          "name": "GET",
+          "params": [
+            {
+              "name": "request",
+              "type": "NextRequest"
+            },
+            {
+              "name": "unknown",
+              "type": "{ params: Promise<{ id: string }> }"
+            }
+          ],
+          "isAsync": true,
+          "isExported": true
+        },
+        {
+          "name": "DELETE",
+          "params": [
+            {
+              "name": "request",
+              "type": "NextRequest"
+            },
+            {
+              "name": "unknown",
+              "type": "{ params: Promise<{ id: string }> }"
             }
           ],
           "isAsync": true,
@@ -1016,6 +1149,101 @@
       "classes": [],
       "constants": []
     },
+    "app/api/gen-animation/route.ts": {
+      "imports": [
+        {
+          "from": "node:fs",
+          "kind": "import",
+          "isDefault": true
+        },
+        {
+          "from": "node:path",
+          "kind": "import",
+          "isDefault": true
+        },
+        {
+          "from": "next/server",
+          "kind": "import",
+          "imported": [
+            "NextRequest"
+          ]
+        },
+        {
+          "from": "@/lib/config/animation-prompts",
+          "kind": "import",
+          "imported": [
+            "buildFramePrompt"
+          ]
+        },
+        {
+          "from": "@/lib/gemini",
+          "kind": "import",
+          "imported": [
+            "generateImage",
+            "ImageContent"
+          ]
+        },
+        {
+          "from": "@/lib/prisma",
+          "kind": "import",
+          "imported": [
+            "prisma"
+          ]
+        }
+      ],
+      "dependencies": [],
+      "functions": [
+        {
+          "name": "loadImageAsBase64",
+          "params": [
+            {
+              "name": "filePath",
+              "type": "string"
+            }
+          ],
+          "isAsync": true,
+          "isExported": false,
+          "returnType": "Promise<string>"
+        },
+        {
+          "name": "ensureDirectoryExists",
+          "params": [
+            {
+              "name": "dirPath",
+              "type": "string"
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "returnType": "void"
+        },
+        {
+          "name": "sanitizeFilename",
+          "params": [
+            {
+              "name": "name",
+              "type": "string"
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "returnType": "string"
+        },
+        {
+          "name": "POST",
+          "params": [
+            {
+              "name": "request",
+              "type": "NextRequest"
+            }
+          ],
+          "isAsync": true,
+          "isExported": true
+        }
+      ],
+      "classes": [],
+      "constants": []
+    },
     "app/api/gen-character/route.ts": {
       "imports": [
         {
@@ -1100,6 +1328,13 @@
           ]
         },
         {
+          "from": "@/lib/generated/prisma/enums",
+          "kind": "import",
+          "imported": [
+            "AssetType"
+          ]
+        },
+        {
           "from": "@/lib/prisma",
           "kind": "import",
           "imported": [
@@ -1113,8 +1348,72 @@
           "name": "GET",
           "params": [
             {
-              "name": "_request",
+              "name": "request",
               "type": "Request"
+            },
+            {
+              "name": "unknown",
+              "type": "{ params: Promise<{ id: string }> }"
+            }
+          ],
+          "isAsync": true,
+          "isExported": true
+        }
+      ],
+      "classes": [],
+      "constants": []
+    },
+    "app/api/projects/[id]/references/route.ts": {
+      "imports": [
+        {
+          "from": "node:fs",
+          "kind": "import",
+          "isDefault": true
+        },
+        {
+          "from": "node:path",
+          "kind": "import",
+          "isDefault": true
+        },
+        {
+          "from": "next/server",
+          "kind": "import",
+          "imported": [
+            "NextRequest",
+            "NextResponse"
+          ]
+        },
+        {
+          "from": "@/lib/prisma",
+          "kind": "import",
+          "imported": [
+            "prisma"
+          ]
+        }
+      ],
+      "dependencies": [],
+      "functions": [
+        {
+          "name": "POST",
+          "params": [
+            {
+              "name": "request",
+              "type": "NextRequest"
+            },
+            {
+              "name": "unknown",
+              "type": "{ params: Promise<{ id: string }> }"
+            }
+          ],
+          "isAsync": true,
+          "isExported": true
+        },
+        {
+          "name": "DELETE",
+          "params": [
+            {
+              "name": "request",
+              "type": "NextRequest"
             },
             {
               "name": "unknown",
@@ -1551,6 +1850,88 @@
         }
       ]
     },
+    "components/ide/forms/asset-metadata-panel.tsx": {
+      "imports": [
+        {
+          "from": "date-fns",
+          "kind": "import",
+          "imported": [
+            "formatDistanceToNow"
+          ]
+        },
+        {
+          "from": "lucide-react",
+          "kind": "import",
+          "imported": [
+            "Calendar",
+            "MessageSquare",
+            "Settings",
+            "ImageIcon",
+            "Download",
+            "Trash2"
+          ]
+        },
+        {
+          "from": "@/components/ui/label",
+          "kind": "import",
+          "imported": [
+            "Label"
+          ]
+        },
+        {
+          "from": "@/components/ui/scroll-area",
+          "kind": "import",
+          "imported": [
+            "ScrollArea"
+          ]
+        },
+        {
+          "from": "@/components/ui/badge",
+          "kind": "import",
+          "imported": [
+            "Badge"
+          ]
+        },
+        {
+          "from": "@/components/ui/button",
+          "kind": "import",
+          "imported": [
+            "Button"
+          ]
+        },
+        {
+          "from": "sonner",
+          "kind": "import",
+          "imported": [
+            "toast"
+          ]
+        },
+        {
+          "from": "@/lib/store",
+          "kind": "import",
+          "imported": [
+            "useAppStore",
+            "Asset"
+          ]
+        }
+      ],
+      "dependencies": [],
+      "functions": [
+        {
+          "name": "AssetMetadataPanel",
+          "params": [
+            {
+              "name": "unknown",
+              "type": "AssetMetadataPanelProps"
+            }
+          ],
+          "isAsync": false,
+          "isExported": true
+        }
+      ],
+      "classes": [],
+      "constants": []
+    },
     "components/ide/forms/edit-character-form.tsx": {
       "imports": [
         {
@@ -1678,10 +2059,10 @@
           ]
         },
         {
-          "from": "@/components/ui/multi-select-asset-picker",
+          "from": "@/components/ui/reference-image-picker",
           "kind": "import",
           "imported": [
-            "MultiSelectAssetPicker"
+            "ReferenceImagePicker"
           ]
         },
         {
@@ -1794,6 +2175,20 @@
           "imported": [
             "useAppStore"
           ]
+        },
+        {
+          "from": "@/lib/config/character-presets",
+          "kind": "import",
+          "imported": [
+            "characterPresets"
+          ]
+        },
+        {
+          "from": "@/lib/utils",
+          "kind": "import",
+          "imported": [
+            "cn"
+          ]
         }
       ],
       "dependencies": [],
@@ -1870,10 +2265,10 @@
           ]
         },
         {
-          "from": "@/components/ui/multi-select-asset-picker",
+          "from": "@/components/ui/reference-image-picker",
           "kind": "import",
           "imported": [
-            "MultiSelectAssetPicker"
+            "ReferenceImagePicker"
           ]
         },
         {
@@ -1908,6 +2303,103 @@
             {
               "name": "unknown",
               "type": "NewCharacterFormProps"
+            }
+          ],
+          "isAsync": false,
+          "isExported": true
+        }
+      ],
+      "classes": [],
+      "constants": []
+    },
+    "components/ide/forms/new-frame-form.tsx": {
+      "imports": [
+        {
+          "from": "react",
+          "kind": "import",
+          "imported": [
+            "useState"
+          ]
+        },
+        {
+          "from": "lucide-react",
+          "kind": "import",
+          "imported": [
+            "Loader2",
+            "AlertCircle",
+            "Check"
+          ]
+        },
+        {
+          "from": "@/components/ui/button",
+          "kind": "import",
+          "imported": [
+            "Button"
+          ]
+        },
+        {
+          "from": "@/components/ui/label",
+          "kind": "import",
+          "imported": [
+            "Label"
+          ]
+        },
+        {
+          "from": "@/components/ui/textarea",
+          "kind": "import",
+          "imported": [
+            "Textarea"
+          ]
+        },
+        {
+          "from": "@/components/ui/select",
+          "kind": "import",
+          "imported": [
+            "Select",
+            "SelectContent",
+            "SelectItem",
+            "SelectTrigger",
+            "SelectValue"
+          ]
+        },
+        {
+          "from": "sonner",
+          "kind": "import",
+          "imported": [
+            "toast"
+          ]
+        },
+        {
+          "from": "@/lib/store",
+          "kind": "import",
+          "imported": [
+            "useAppStore",
+            "AnimationWithCharacterAsset"
+          ]
+        },
+        {
+          "from": "@/lib/config/character-presets",
+          "kind": "import",
+          "imported": [
+            "characterPresets"
+          ]
+        },
+        {
+          "from": "@/lib/utils",
+          "kind": "import",
+          "imported": [
+            "cn"
+          ]
+        }
+      ],
+      "dependencies": [],
+      "functions": [
+        {
+          "name": "NewFrameForm",
+          "params": [
+            {
+              "name": "unknown",
+              "type": "NewFrameFormProps"
             }
           ],
           "isAsync": false,
@@ -2061,7 +2553,8 @@
             "Sparkles",
             "Film",
             "Wand2",
-            "Copy"
+            "Copy",
+            "ImageIcon"
           ]
         },
         {
@@ -2069,13 +2562,6 @@
           "kind": "import",
           "imported": [
             "Button"
-          ]
-        },
-        {
-          "from": "@/components/ui/scroll-area",
-          "kind": "import",
-          "imported": [
-            "ScrollArea"
           ]
         },
         {
@@ -2112,13 +2598,29 @@
           "imported": [
             "GenerateVariationForm"
           ]
+        },
+        {
+          "from": "./forms/new-frame-form",
+          "kind": "import",
+          "imported": [
+            "NewFrameForm"
+          ]
+        },
+        {
+          "from": "./forms/asset-metadata-panel",
+          "kind": "import",
+          "imported": [
+            "AssetMetadataPanel"
+          ]
         }
       ],
       "dependencies": [
+        "components/ide/forms/asset-metadata-panel.tsx",
         "components/ide/forms/edit-character-form.tsx",
         "components/ide/forms/generate-variation-form.tsx",
         "components/ide/forms/new-animation-form.tsx",
-        "components/ide/forms/new-character-form.tsx"
+        "components/ide/forms/new-character-form.tsx",
+        "components/ide/forms/new-frame-form.tsx"
       ],
       "functions": [
         {
@@ -2187,7 +2689,8 @@
             "ChevronLeft",
             "ChevronRight",
             "X",
-            "Check"
+            "Check",
+            "AlertCircle"
           ]
         },
         {
@@ -2263,11 +2766,55 @@
           "params": [
             {
               "name": "unknown",
-              "type": "{\n\tframe: FrameWithAsset;\n\tindex: number;\n\tisActive: boolean;\n\tonClick: () => void;\n\tonDelete: () => Promise<void>;\n}"
+              "type": "{\n  frame: FrameWithAsset;\n  index: number;\n  isActive: boolean;\n  onClick: () => void;\n  onDelete: () => Promise<void>;\n}"
             }
           ],
           "isAsync": false,
           "isExported": false
+        }
+      ],
+      "classes": [],
+      "constants": []
+    },
+    "components/ide/views/asset-view.tsx": {
+      "imports": [
+        {
+          "from": "react",
+          "kind": "import",
+          "imported": [
+            "useEffect",
+            "useState"
+          ]
+        },
+        {
+          "from": "lucide-react",
+          "kind": "import",
+          "imported": [
+            "Loader2",
+            "ImageIcon"
+          ]
+        },
+        {
+          "from": "@/lib/store",
+          "kind": "import",
+          "imported": [
+            "useAppStore",
+            "Asset"
+          ]
+        }
+      ],
+      "dependencies": [],
+      "functions": [
+        {
+          "name": "AssetView",
+          "params": [
+            {
+              "name": "unknown",
+              "type": "AssetViewProps"
+            }
+          ],
+          "isAsync": false,
+          "isExported": true
         }
       ],
       "classes": [],
@@ -2292,7 +2839,6 @@
             "Plus",
             "Calendar",
             "Edit",
-            "Star",
             "Loader2",
             "ImageIcon",
             "Trash2"
@@ -2313,10 +2859,10 @@
           ]
         },
         {
-          "from": "@/components/ui/badge",
+          "from": "@/components/ui/asset-thumbnail",
           "kind": "import",
           "imported": [
-            "Badge"
+            "AssetThumbnail"
           ]
         },
         {
@@ -2348,7 +2894,6 @@
             "useAppStore",
             "CharacterWithAssets",
             "AnimationWithFrames",
-            "Asset",
             "Project"
           ]
         },
@@ -2379,17 +2924,6 @@
           ],
           "isAsync": false,
           "isExported": true
-        },
-        {
-          "name": "AssetCard",
-          "params": [
-            {
-              "name": "unknown",
-              "type": "{\n\tasset: Asset;\n\tisPrimary: boolean;\n\tisSettingPrimary: boolean;\n\tonSetPrimary: () => void;\n}"
-            }
-          ],
-          "isAsync": false,
-          "isExported": false
         },
         {
           "name": "AnimationRow",
@@ -2427,7 +2961,10 @@
             "MoreVertical",
             "Loader2",
             "X",
-            "Check"
+            "Check",
+            "ImagePlus",
+            "Trash2",
+            "Upload"
           ]
         },
         {
@@ -2468,7 +3005,8 @@
             "useAppStore",
             "ProjectWithRelations",
             "CharacterWithAssets",
-            "AnimationWithFrames"
+            "AnimationWithFrames",
+            "Asset"
           ]
         },
         {
@@ -2547,7 +3085,8 @@
             "Sparkles",
             "Film",
             "PanelLeft",
-            "PanelRight"
+            "PanelRight",
+            "ImageIcon"
           ]
         },
         {
@@ -2600,10 +3139,18 @@
           "imported": [
             "AnimationView"
           ]
+        },
+        {
+          "from": "./views/asset-view",
+          "kind": "import",
+          "imported": [
+            "AssetView"
+          ]
         }
       ],
       "dependencies": [
         "components/ide/views/animation-view.tsx",
+        "components/ide/views/asset-view.tsx",
         "components/ide/views/character-view.tsx",
         "components/ide/views/project-view.tsx"
       ],
@@ -3150,6 +3697,78 @@
           ],
           "isAsync": false,
           "isExported": false
+        }
+      ],
+      "classes": [],
+      "constants": []
+    },
+    "components/ui/asset-thumbnail.tsx": {
+      "imports": [
+        {
+          "from": "lucide-react",
+          "kind": "import",
+          "imported": [
+            "Star",
+            "Eye",
+            "Edit",
+            "Trash2",
+            "Loader2",
+            "Expand"
+          ]
+        },
+        {
+          "from": "@/components/ui/badge",
+          "kind": "import",
+          "imported": [
+            "Badge"
+          ]
+        },
+        {
+          "from": "@/components/ui/button",
+          "kind": "import",
+          "imported": [
+            "Button"
+          ]
+        },
+        {
+          "from": "@/components/ui/context-menu",
+          "kind": "import",
+          "imported": [
+            "ContextMenu",
+            "ContextMenuContent",
+            "ContextMenuItem",
+            "ContextMenuSeparator",
+            "ContextMenuTrigger"
+          ]
+        },
+        {
+          "from": "@/lib/store",
+          "kind": "import",
+          "imported": [
+            "useAppStore",
+            "Asset"
+          ]
+        },
+        {
+          "from": "@/lib/utils",
+          "kind": "import",
+          "imported": [
+            "cn"
+          ]
+        }
+      ],
+      "dependencies": [],
+      "functions": [
+        {
+          "name": "AssetThumbnail",
+          "params": [
+            {
+              "name": "unknown",
+              "type": "AssetThumbnailProps"
+            }
+          ],
+          "isAsync": false,
+          "isExported": true
         }
       ],
       "classes": [],
@@ -6446,6 +7065,87 @@
       "classes": [],
       "constants": []
     },
+    "components/ui/reference-image-picker.tsx": {
+      "imports": [
+        {
+          "from": "lucide-react",
+          "kind": "import",
+          "imported": [
+            "Check",
+            "FolderOpen",
+            "Image",
+            "Film",
+            "RefreshCw"
+          ]
+        },
+        {
+          "from": "react",
+          "kind": "import",
+          "imported": [
+            "useEffect",
+            "useState"
+          ]
+        },
+        {
+          "from": "@/components/ui/button",
+          "kind": "import",
+          "imported": [
+            "Button"
+          ]
+        },
+        {
+          "from": "@/components/ui/accordion",
+          "kind": "import",
+          "imported": [
+            "Accordion",
+            "AccordionContent",
+            "AccordionItem",
+            "AccordionTrigger"
+          ]
+        },
+        {
+          "from": "@/lib/utils",
+          "kind": "import",
+          "imported": [
+            "cn"
+          ]
+        },
+        {
+          "from": "@/lib/store",
+          "kind": "import",
+          "imported": [
+            "Asset"
+          ]
+        }
+      ],
+      "dependencies": [],
+      "functions": [
+        {
+          "name": "ReferenceImagePicker",
+          "params": [
+            {
+              "name": "unknown",
+              "type": "ReferenceImagePickerProps"
+            }
+          ],
+          "isAsync": false,
+          "isExported": true
+        },
+        {
+          "name": "AssetGrid",
+          "params": [
+            {
+              "name": "unknown",
+              "type": "{\n\tassets: Asset[];\n\tselected: string[];\n\tonToggle: (id: string) => void;\n\tdisabled: boolean;\n}"
+            }
+          ],
+          "isAsync": false,
+          "isExported": false
+        }
+      ],
+      "classes": [],
+      "constants": []
+    },
     "components/ui/resizable.tsx": {
       "imports": [
         {
@@ -7888,6 +8588,70 @@
           "isExported": false
         }
       ]
+    },
+    "lib/config/animation-prompts.ts": {
+      "imports": [
+        {
+          "from": "./character-presets",
+          "kind": "import",
+          "imported": [
+            "characterPresets"
+          ]
+        }
+      ],
+      "dependencies": [
+        "lib/config/character-presets.ts"
+      ],
+      "functions": [
+        {
+          "name": "buildFramePrompt",
+          "params": [
+            {
+              "name": "params",
+              "type": "BuildFramePromptParams"
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "returnType": "string"
+        },
+        {
+          "name": "getPositionContext",
+          "params": [
+            {
+              "name": "frameIndex",
+              "type": "number"
+            },
+            {
+              "name": "totalFrames",
+              "type": "number"
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "returnType": "string"
+        },
+        {
+          "name": "buildSystemPromptForAnimation",
+          "params": [
+            {
+              "name": "stylePreset",
+              "type": "string",
+              "optional": true
+            },
+            {
+              "name": "backgroundPreset",
+              "type": "string",
+              "optional": true
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "returnType": "string"
+        }
+      ],
+      "classes": [],
+      "constants": []
     },
     "lib/config/character-presets.ts": {
       "imports": [],

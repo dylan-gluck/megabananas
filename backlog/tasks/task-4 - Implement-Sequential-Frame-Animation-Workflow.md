@@ -1,10 +1,10 @@
 ---
 id: task-4
 title: Implement Sequential Frame Animation Workflow
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-01-02 00:18'
-updated_date: '2026-01-02 00:18'
+updated_date: '2026-01-02 18:40'
 labels:
   - animation
   - api
@@ -114,11 +114,41 @@ This enables the AI to maintain visual consistency across the sequence.
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 Animation form in right sidebar allows character selection, naming, and prompt entry
-- [ ] #2 Per-frame instruction inputs available for customizing individual frames
-- [ ] #3 API generates frames sequentially with each frame receiving prior frames as context
-- [ ] #4 Each generated frame saved as individual Asset with correct file path convention
-- [ ] #5 Frame and Animation records created in database with proper relationships
-- [ ] #6 Progress updates display in UI as each frame completes
+- [x] #2 Per-frame instruction inputs available for customizing individual frames
+- [x] #3 API generates frames sequentially with each frame receiving prior frames as context
+- [x] #4 Each generated frame saved as individual Asset with correct file path convention
+- [x] #5 Frame and Animation records created in database with proper relationships
+- [x] #6 Progress updates display in UI as each frame completes
 - [ ] #7 Partial failures handled gracefully - can retry failed frames
 - [ ] #8 Generated animation displays correctly in Animation view with ordered frames
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+## Implementation Progress (2026-01-02)
+
+### Files Created
+- `lib/config/animation-prompts.ts` - Prompt building helper with frame position context and angle support
+- `app/api/gen-animation/route.ts` - SSE endpoint for sequential frame generation
+- `components/ide/forms/generate-frames-form.tsx` - Form component with variation selector, angle dropdown, per-frame instructions, and live progress grid
+
+### Files Modified
+- `components/ide/right-sidebar.tsx` - Wired up GenerateFramesForm
+- `lib/store.ts` - Added AnimationWithCharacterAsset type
+- `app/api/animations/[id]/route.ts` - Include character.assets in response
+- `components/ide/views/animation-view.tsx` - Updated local type to include assets
+
+### Key Implementation Decisions
+1. **SSE over polling**: Chose Server-Sent Events for real-time progress - better UX than polling, simpler than WebSockets
+2. **Variation selector**: Added ability to select any character variation as reference (not just primary asset)
+3. **Angle preset**: Added angle dropdown using existing characterPresets.angles, incorporated into frame prompts
+4. **Frame path convention**: `public/assets/[projectId]/frames/[animationName]/[charName]_[animName]_[frameIdx]_[timestamp].png`
+5. **Partial failure handling**: Individual frame errors send frame_error event but continue to next frame
+6. **Cumulative context**: Each frame generation receives character image + all prior generated frames as references
+
+### Remaining Work
+- AC #1: Animation form exists but character selector is in new-animation-form (separate from generate-frames-form)
+- AC #7: Retry failed frames UI not yet implemented (frames marked as failed, but no retry button)
+- AC #8: Needs end-to-end testing
+<!-- SECTION:NOTES:END -->

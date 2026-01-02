@@ -95,6 +95,9 @@ model Animation {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  // Generation config (characterAssetId, anglePreset, etc.)
+  generationSettings Json?
+
   // Relations
   project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)

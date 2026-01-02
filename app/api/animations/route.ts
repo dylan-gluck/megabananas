@@ -4,7 +4,8 @@ import { prisma } from "@/lib/prisma";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, characterId, description, frameCount } = body;
+    const { name, characterId, description, frameCount, generationConfig } =
+      body;
 
     if (!name || typeof name !== "string") {
       return NextResponse.json(
@@ -40,6 +41,7 @@ export async function POST(request: Request) {
         projectId: character.projectId,
         description: description || null,
         frameCount: frameCount || 4,
+        generationSettings: generationConfig || null,
       },
       include: {
         character: true,

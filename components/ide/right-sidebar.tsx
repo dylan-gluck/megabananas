@@ -7,6 +7,7 @@ import { NewCharacterForm } from "./forms/new-character-form";
 import { NewAnimationForm } from "./forms/new-animation-form";
 import { EditCharacterForm } from "./forms/edit-character-form";
 import { GenerateVariationForm } from "./forms/generate-variation-form";
+import { NewFrameForm } from "./forms/new-frame-form";
 import { AssetMetadataPanel } from "./forms/asset-metadata-panel";
 
 export function RightSidebar() {
@@ -66,7 +67,7 @@ function ActionContextIcon() {
 			return <Copy className={iconClass} />;
 		case "new-animation":
 		case "edit-animation":
-		case "generate-frames":
+		case "new-frame":
 			return <Film className={iconClass} />;
 		case "view-asset":
 			return <ImageIcon className={iconClass} />;
@@ -89,8 +90,8 @@ function ActionContextTitle() {
 			return "New Animation";
 		case "edit-animation":
 			return `Edit ${actionContext.animation.name}`;
-		case "generate-frames":
-			return `Generate ${actionContext.animation.name}`;
+		case "new-frame":
+			return `New Frame: ${actionContext.animation.name}`;
 		case "view-asset":
 			return "Asset Details";
 		default:
@@ -124,13 +125,8 @@ function ActionContextContent() {
 					<p className="mt-2">Animation: {actionContext.animation.name}</p>
 				</div>
 			);
-		case "generate-frames":
-			return (
-				<div className="p-4 text-sm text-muted-foreground">
-					<p>Frame generation UI will be here.</p>
-					<p className="mt-2">Animation: {actionContext.animation.name}</p>
-				</div>
-			);
+		case "new-frame":
+			return <NewFrameForm animation={actionContext.animation} />;
 		default:
 			return <EmptyActionState hasProject={!!currentProject} />;
 	}

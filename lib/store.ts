@@ -56,6 +56,10 @@ export interface Animation {
   frameCount: number;
   createdAt: Date;
   updatedAt: Date;
+  generationSettings: {
+    characterAssetId: string;
+    anglePreset?: string;
+  } | null;
 }
 
 export interface Frame {
@@ -87,6 +91,11 @@ export interface ProjectWithRelations extends Project {
   animations: AnimationWithFrames[];
 }
 
+// Extended animation type with character's primary asset and variations for generation
+export interface AnimationWithCharacterAsset extends AnimationWithFrames {
+  character: Character & { primaryAsset: Asset | null; assets: Asset[] };
+}
+
 // Right sidebar context types
 export type ActionContext =
   | { type: "none" }
@@ -94,7 +103,7 @@ export type ActionContext =
   | { type: "new-animation"; projectId: string; characterId?: string }
   | { type: "edit-character"; character: CharacterWithAssets }
   | { type: "edit-animation"; animation: AnimationWithFrames }
-  | { type: "generate-frames"; animation: AnimationWithFrames }
+  | { type: "new-frame"; animation: AnimationWithCharacterAsset }
   | { type: "generate-variation"; character: CharacterWithAssets }
   | { type: "view-asset"; asset: Asset };
 

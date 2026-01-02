@@ -14,6 +14,7 @@ export async function GET(
         character: {
           include: {
             primaryAsset: true,
+            assets: true,
           },
         },
         frames: {
