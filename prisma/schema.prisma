@@ -1,8 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Prisma schema for megabananas
+// Docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client"
@@ -13,11 +10,106 @@ datasource db {
   provider = "postgresql"
 }
 
-// Placeholder model to validate database connection
-// Will be replaced with full data model in task-2
+// Top-level container for all work
 model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  thumbnailId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  assets     Asset[]
+  characters Character[]
+  animations Animation[]
+
+  @@index([name])
+}
+
+// Unified storage for all images with provenance tracking
+model Asset {
   id        String   @id @default(cuid())
+  projectId String
+  filePath  String
+  createdAt DateTime @default(now())
+
+  // Provenance fields
+  systemPrompt      String?
+  userPrompt        String?
+  referenceAssetIds String[] // IDs of assets used as references during generation
+  generationSettings Json?   // Model params, dimensions, etc.
+
+  // Relations
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  character Character? @relation("CharacterAssets", fields: [characterId], references: [id], onDelete: SetNull)
+  characterId String?
+
+  // Primary asset relation (reverse)
+  primaryForCharacter Character? @relation("CharacterPrimaryAsset")
+
+  // Frame relation
+  frame Frame?
+
+  @@index([projectId])
+  @@index([characterId])
+}
+
+// Character with variations and primary asset
+model Character {
+  id        String   @id @default(cuid())
+  projectId String
   name      String
+  userPrompt String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Primary asset reference
+  primaryAssetId String? @unique
+  primaryAsset   Asset?  @relation("CharacterPrimaryAsset", fields: [primaryAssetId], references: [id], onDelete: SetNull)
+
+  // Relations
+  project    Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assets     Asset[]     @relation("CharacterAssets") // Variation assets
+  animations Animation[]
+
+  @@unique([projectId, name])
+  @@index([projectId])
+}
+
+// Animation sequence belonging to a character
+model Animation {
+  id          String   @id @default(cuid())
+  projectId   String
+  characterId String
+  name        String
+  description String?
+  frameCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  frames    Frame[]
+
+  @@unique([characterId, name])
+  @@index([projectId])
+  @@index([characterId])
+}
+
+// Individual frame in an animation sequence
+model Frame {
+  id          String   @id @default(cuid())
+  animationId String
+  assetId     String   @unique
+  frameIndex  Int
+  createdAt   DateTime @default(now())
+
+  // Relations
+  animation Animation @relation(fields: [animationId], references: [id], onDelete: Cascade)
+  asset     Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@unique([animationId, frameIndex])
+  @@index([animationId])
 }

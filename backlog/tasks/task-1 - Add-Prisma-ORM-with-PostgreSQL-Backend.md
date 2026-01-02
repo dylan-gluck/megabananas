@@ -1,9 +1,10 @@
 ---
 id: task-1
 title: Add Prisma ORM with PostgreSQL Backend
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-01-02 00:17'
+updated_date: '2026-01-02 00:57'
 labels:
   - infrastructure
   - database
