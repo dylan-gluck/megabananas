@@ -7,7 +7,12 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
-    const { prompt, referenceImages = [], aspectRatio } = await request.json();
+    const {
+      prompt,
+      systemPrompt,
+      referenceImages = [],
+      aspectRatio,
+    } = await request.json();
 
     if (!prompt) {
       return NextResponse.json(
@@ -16,12 +21,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Combine system prompt with user prompt
+    const fullPrompt = systemPrompt
+      ? `${systemPrompt}\n\nCharacter description: ${prompt}`
+      : prompt;
+
     const refs: ImageContent[] = referenceImages.map((img: string) => ({
       mimeType: "image/png",
       data: img.replace(/^data:image\/\w+;base64,/, ""),
     }));
 
-    const result = await generateImage(prompt, refs, { aspectRatio });
+    const result = await generateImage(fullPrompt, refs, { aspectRatio });
     const filename = saveImageToFile(result.image, "characters", "char");
 
     return NextResponse.json({

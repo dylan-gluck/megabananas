@@ -90,7 +90,8 @@ export type ActionContext =
   | { type: "new-animation"; projectId: string; characterId?: string }
   | { type: "edit-character"; character: CharacterWithAssets }
   | { type: "edit-animation"; animation: AnimationWithFrames }
-  | { type: "generate-frames"; animation: AnimationWithFrames };
+  | { type: "generate-frames"; animation: AnimationWithFrames }
+  | { type: "generate-variation"; character: CharacterWithAssets };
 
 interface AppState {
   // Current project

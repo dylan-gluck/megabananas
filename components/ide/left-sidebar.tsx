@@ -434,7 +434,7 @@ export function LeftSidebar() {
 										onClick={() => handleAnimationClick(animation)}
 									>
 										<Film className="h-4 w-4 mr-2 text-muted-foreground" />
-										<span className="truncate flex-1">{animation.name}</span>
+										<span className="truncate flex-1 text-left">{animation.name}</span>
 										<span className="text-xs text-muted-foreground">
 											{animation.frames.length}f
 										</span>

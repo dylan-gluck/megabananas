@@ -10,10 +10,22 @@ import {
 	Star,
 	Loader2,
 	Image as ImageIcon,
+	Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import {
 	useAppStore,
@@ -34,17 +46,14 @@ interface CharacterViewProps {
 }
 
 export function CharacterView({ characterId }: CharacterViewProps) {
-	const { openTab, setActionContext, refreshCurrentProject } = useAppStore();
+	const { openTab, setActionContext, refreshCurrentProject, closeTab, currentProject } = useAppStore();
 	const [character, setCharacter] = useState<CharacterWithProject | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [settingPrimary, setSettingPrimary] = useState<string | null>(null);
+	const [isDeleting, setIsDeleting] = useState(false);
 
-	useEffect(() => {
-		fetchCharacter();
-	}, [characterId]);
-
-	const fetchCharacter = async () => {
-		setIsLoading(true);
+	const fetchCharacter = async (showLoading = true) => {
+		if (showLoading) setIsLoading(true);
 		try {
 			const res = await fetch(`/api/characters/${characterId}`);
 			if (res.ok) {
@@ -57,6 +66,18 @@ export function CharacterView({ characterId }: CharacterViewProps) {
 			setIsLoading(false);
 		}
 	};
+
+	// Initial fetch
+	useEffect(() => {
+		fetchCharacter(true);
+	}, [characterId]);
+
+	// Refetch without loading spinner when project updates (e.g., after generating variation)
+	useEffect(() => {
+		if (character) {
+			fetchCharacter(false);
+		}
+	}, [currentProject]);
 
 	const handleSetPrimary = async (assetId: string) => {
 		setSettingPrimary(assetId);
@@ -78,6 +99,28 @@ export function CharacterView({ characterId }: CharacterViewProps) {
 			toast.error("Failed to update primary asset");
 		} finally {
 			setSettingPrimary(null);
+		}
+	};
+
+	const handleDelete = async () => {
+		setIsDeleting(true);
+		try {
+			const res = await fetch(`/api/characters/${characterId}`, {
+				method: "DELETE",
+			});
+
+			if (res.ok) {
+				toast.success(`Character "${character?.name}" deleted`);
+				closeTab(`character-${characterId}`);
+				await refreshCurrentProject();
+			} else {
+				const data = await res.json();
+				toast.error(data.error || "Failed to delete character");
+			}
+		} catch {
+			toast.error("Failed to delete character");
+		} finally {
+			setIsDeleting(false);
 		}
 	};
 
@@ -130,19 +173,59 @@ export function CharacterView({ characterId }: CharacterViewProps) {
 									{character.project.name}
 								</p>
 							</div>
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() =>
-									setActionContext({
-										type: "edit-character",
-										character: character,
-									})
-								}
-							>
-								<Edit className="h-4 w-4 mr-1" />
-								Edit
-							</Button>
+							<div className="flex items-center gap-2">
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() =>
+										setActionContext({
+											type: "edit-character",
+											character: character,
+										})
+									}
+								>
+									<Edit className="h-4 w-4 mr-1" />
+									Edit
+								</Button>
+								<AlertDialog>
+									<AlertDialogTrigger asChild>
+										<Button
+											variant="outline"
+											size="sm"
+											className="text-destructive hover:text-destructive"
+										>
+											<Trash2 className="h-4 w-4" />
+										</Button>
+									</AlertDialogTrigger>
+									<AlertDialogContent>
+										<AlertDialogHeader>
+											<AlertDialogTitle>Delete Character</AlertDialogTitle>
+											<AlertDialogDescription>
+												Are you sure you want to delete "{character.name}"? This
+												will also delete all associated variations and animations.
+												This action cannot be undone.
+											</AlertDialogDescription>
+										</AlertDialogHeader>
+										<AlertDialogFooter>
+											<AlertDialogCancel>Cancel</AlertDialogCancel>
+											<AlertDialogAction
+												onClick={handleDelete}
+												disabled={isDeleting}
+												className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+											>
+												{isDeleting ? (
+													<>
+														<Loader2 className="h-4 w-4 mr-2 animate-spin" />
+														Deleting...
+													</>
+												) : (
+													"Delete"
+												)}
+											</AlertDialogAction>
+										</AlertDialogFooter>
+									</AlertDialogContent>
+								</AlertDialog>
+							</div>
 						</div>
 
 						{character.userPrompt && (
@@ -172,7 +255,16 @@ export function CharacterView({ characterId }: CharacterViewProps) {
 							<ImageIcon className="h-5 w-5 text-primary" />
 							Variations
 						</h2>
-						<Button size="sm" variant="outline">
+						<Button
+							size="sm"
+							variant="outline"
+							onClick={() =>
+								setActionContext({
+									type: "generate-variation",
+									character: character,
+								})
+							}
+						>
 							<Plus className="h-4 w-4 mr-1" />
 							Generate Variation
 						</Button>

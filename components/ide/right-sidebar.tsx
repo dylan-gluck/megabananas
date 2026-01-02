@@ -1,11 +1,13 @@
 "use client";
 
-import { PanelRightClose, X, Sparkles, Film, Wand2, Edit } from "lucide-react";
+import { PanelRightClose, X, Sparkles, Film, Wand2, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAppStore } from "@/lib/store";
 import { NewCharacterForm } from "./forms/new-character-form";
 import { NewAnimationForm } from "./forms/new-animation-form";
+import { EditCharacterForm } from "./forms/edit-character-form";
+import { GenerateVariationForm } from "./forms/generate-variation-form";
 
 export function RightSidebar() {
 	const { actionContext, clearActionContext, toggleRightSidebar } =
@@ -62,6 +64,8 @@ function ActionContextIcon() {
 		case "new-character":
 		case "edit-character":
 			return <Sparkles className={iconClass} />;
+		case "generate-variation":
+			return <Copy className={iconClass} />;
 		case "new-animation":
 		case "edit-animation":
 		case "generate-frames":
@@ -79,6 +83,8 @@ function ActionContextTitle() {
 			return "New Character";
 		case "edit-character":
 			return `Edit ${actionContext.character.name}`;
+		case "generate-variation":
+			return `Variation: ${actionContext.character.name}`;
 		case "new-animation":
 			return "New Animation";
 		case "edit-animation":
@@ -104,12 +110,9 @@ function ActionContextContent() {
 				/>
 			);
 		case "edit-character":
-			return (
-				<div className="text-sm text-muted-foreground">
-					<p>Character editing form will be here.</p>
-					<p className="mt-2">Character: {actionContext.character.name}</p>
-				</div>
-			);
+			return <EditCharacterForm character={actionContext.character} />;
+		case "generate-variation":
+			return <GenerateVariationForm character={actionContext.character} />;
 		case "edit-animation":
 			return (
 				<div className="text-sm text-muted-foreground">

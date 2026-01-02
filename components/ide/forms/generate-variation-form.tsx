@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -15,39 +14,34 @@ import {
 } from "@/components/ui/select";
 import { MultiSelectAssetPicker } from "@/components/ui/multi-select-asset-picker";
 import { toast } from "sonner";
-import { useAppStore, type Asset } from "@/lib/store";
+import { useAppStore, type Asset, type CharacterWithAssets } from "@/lib/store";
 import {
 	characterPresets,
 	buildSystemPrompt,
 } from "@/lib/config/character-presets";
 
-interface NewCharacterFormProps {
-	projectId: string;
+interface GenerateVariationFormProps {
+	character: CharacterWithAssets;
 }
 
-type GenerationStatus =
-	| "idle"
-	| "creating"
-	| "generating"
-	| "saving"
-	| "complete"
-	| "failed";
+type GenerationStatus = "idle" | "generating" | "saving" | "complete" | "failed";
 
-export function NewCharacterForm({ projectId }: NewCharacterFormProps) {
+export function GenerateVariationForm({
+	character,
+}: GenerateVariationFormProps) {
 	const { clearActionContext, refreshCurrentProject } = useAppStore();
 
-	// Form state
-	const [name, setName] = useState("");
-	const [prompt, setPrompt] = useState("");
+	// Form state - pre-fill with character's existing prompt if available
+	const [prompt, setPrompt] = useState(character.userPrompt || "");
 
 	// Preset state
 	const [backgroundPreset, setBackgroundPreset] = useState("white");
 	const [stylePreset, setStylePreset] = useState("pixel-art");
 	const [anglePreset, setAnglePreset] = useState("front");
 
-	// Reference assets
+	// Reference assets - include character's existing assets as potential references
 	const [selectedReferenceIds, setSelectedReferenceIds] = useState<string[]>(
-		[]
+		character.primaryAsset ? [character.primaryAsset.id] : []
 	);
 	const [projectAssets, setProjectAssets] = useState<Asset[]>([]);
 
@@ -60,7 +54,7 @@ export function NewCharacterForm({ projectId }: NewCharacterFormProps) {
 	useEffect(() => {
 		const fetchAssets = async () => {
 			try {
-				const res = await fetch(`/api/projects/${projectId}/assets`);
+				const res = await fetch(`/api/projects/${character.projectId}/assets`);
 				const data = await res.json();
 				setProjectAssets(data.assets || []);
 			} catch (error) {
@@ -68,14 +62,12 @@ export function NewCharacterForm({ projectId }: NewCharacterFormProps) {
 			}
 		};
 		fetchAssets();
-	}, [projectId]);
+	}, [character.projectId]);
 
 	const getStatusMessage = () => {
 		switch (status) {
-			case "creating":
-				return "Creating character...";
 			case "generating":
-				return "Generating image...";
+				return "Generating variation...";
 			case "saving":
 				return "Saving asset...";
 			default:
@@ -86,33 +78,8 @@ export function NewCharacterForm({ projectId }: NewCharacterFormProps) {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
-		if (!name.trim()) {
-			toast.error("Please enter a character name");
-			return;
-		}
-
 		try {
-			// Step 1: Create character in DB
-			setStatus("creating");
-
-			const characterRes = await fetch("/api/characters", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					name: name.trim(),
-					projectId,
-					userPrompt: prompt.trim() || null,
-				}),
-			});
-
-			if (!characterRes.ok) {
-				const data = await characterRes.json();
-				throw new Error(data.error || "Failed to create character");
-			}
-
-			const character = await characterRes.json();
-
-			// Step 2: Generate image
+			// Step 1: Generate image
 			setStatus("generating");
 
 			const systemPrompt = buildSystemPrompt(
@@ -146,7 +113,7 @@ export function NewCharacterForm({ projectId }: NewCharacterFormProps) {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
-					prompt: prompt.trim() || name.trim(),
+					prompt: prompt.trim() || character.name,
 					systemPrompt,
 					referenceImages,
 					aspectRatio: "1:1",
@@ -160,14 +127,14 @@ export function NewCharacterForm({ projectId }: NewCharacterFormProps) {
 
 			const genResult = await genRes.json();
 
-			// Step 3: Create asset record
+			// Step 2: Create asset record
 			setStatus("saving");
 
 			const assetRes = await fetch("/api/assets", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
-					projectId,
+					projectId: character.projectId,
 					filePath: `/assets/characters/${genResult.filename}`,
 					systemPrompt,
 					userPrompt: prompt.trim() || null,
@@ -186,43 +153,28 @@ export function NewCharacterForm({ projectId }: NewCharacterFormProps) {
 				console.warn("Failed to create asset record, continuing...");
 			}
 
-			const asset = assetRes.ok ? await assetRes.json() : null;
-
-			// Step 4: Update character with primary asset
-			if (asset?.id) {
-				await fetch(`/api/characters/${character.id}`, {
-					method: "PATCH",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						primaryAssetId: asset.id,
-					}),
-				});
-			}
-
 			setStatus("complete");
-			toast.success(`Character "${name}" created`);
+			toast.success(`Variation generated for "${character.name}"`);
 			clearActionContext();
 			await refreshCurrentProject();
 		} catch (err) {
 			setStatus("failed");
 			toast.error(
-				err instanceof Error ? err.message : "Failed to create character"
+				err instanceof Error ? err.message : "Failed to generate variation"
 			);
 		}
 	};
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-4">
-			{/* Name */}
-			<div className="space-y-2">
-				<Label htmlFor="name">Name</Label>
-				<Input
-					id="name"
-					placeholder="e.g., Knight, Wizard, Dragon"
-					value={name}
-					onChange={(e) => setName(e.target.value)}
-					disabled={isLoading}
-				/>
+			{/* Character info */}
+			<div className="p-3 rounded-lg bg-muted/50 border border-border">
+				<p className="text-sm font-medium">{character.name}</p>
+				{character.userPrompt && (
+					<p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+						{character.userPrompt}
+					</p>
+				)}
 			</div>
 
 			{/* Preset Dropdowns */}
@@ -294,12 +246,12 @@ export function NewCharacterForm({ projectId }: NewCharacterFormProps) {
 				</Select>
 			</div>
 
-			{/* Description */}
+			{/* Description override */}
 			<div className="space-y-2">
-				<Label htmlFor="prompt">Description</Label>
+				<Label htmlFor="prompt">Description Override</Label>
 				<Textarea
 					id="prompt"
-					placeholder="Describe your character's appearance, style, colors..."
+					placeholder="Modify the character description for this variation..."
 					value={prompt}
 					onChange={(e) => setPrompt(e.target.value)}
 					rows={3}
@@ -311,7 +263,7 @@ export function NewCharacterForm({ projectId }: NewCharacterFormProps) {
 			<div className="space-y-2">
 				<Label>Reference Images</Label>
 				<MultiSelectAssetPicker
-					projectId={projectId}
+					projectId={character.projectId}
 					value={selectedReferenceIds}
 					onChange={setSelectedReferenceIds}
 					disabled={isLoading}
@@ -341,12 +293,10 @@ export function NewCharacterForm({ projectId }: NewCharacterFormProps) {
 					{isLoading ? (
 						<>
 							<Loader2 className="h-4 w-4 mr-2 animate-spin" />
-							{status === "creating" && "Creating..."}
-							{status === "generating" && "Generating..."}
-							{status === "saving" && "Saving..."}
+							Generating...
 						</>
 					) : (
-						"Create Character"
+						"Generate Variation"
 					)}
 				</Button>
 			</div>
