@@ -19,6 +19,7 @@ export function Workspace() {
 	const {
 		tabs,
 		activeTabId,
+		currentProjectId,
 		setActiveTab,
 		closeTab,
 		leftSidebarOpen,
@@ -32,7 +33,7 @@ export function Workspace() {
 	return (
 		<div className="h-full flex flex-col bg-background">
 			{/* Tab Bar */}
-			<div className="h-12 border-b border-border flex items-center gap-1 px-2 bg-muted/30">
+			<div className="h-14 border-b border-border flex items-center gap-1 pt-1 px-2 bg-muted/30">
 				{/* Left sidebar toggle */}
 				{!leftSidebarOpen && (
 					<Button
@@ -51,6 +52,8 @@ export function Workspace() {
 						{tabs.map((tab) => {
 							const Icon = tabIcons[tab.type];
 							const isActive = tab.id === activeTabId;
+							const isCurrentProjectTab =
+								tab.type === "project" && tab.entityId === currentProjectId;
 
 							return (
 								<div
@@ -70,20 +73,22 @@ export function Workspace() {
 								>
 									<Icon className="h-4 w-4 flex-shrink-0" />
 									<span className="truncate max-w-[120px]">{tab.label}</span>
-									<Button
-										variant="ghost"
-										size="icon"
-										className={cn(
-											"h-5 w-5 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity",
-											isActive && "opacity-60",
-										)}
-										onClick={(e) => {
-											e.stopPropagation();
-											closeTab(tab.id);
-										}}
-									>
-										<X className="h-3 w-3" />
-									</Button>
+									{!isCurrentProjectTab && (
+										<Button
+											variant="ghost"
+											size="icon"
+											className={cn(
+												"h-5 w-5 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity",
+												isActive && "opacity-60",
+											)}
+											onClick={(e) => {
+												e.stopPropagation();
+												closeTab(tab.id);
+											}}
+										>
+											<X className="h-3 w-3" />
+										</Button>
+									)}
 								</div>
 							);
 						})}

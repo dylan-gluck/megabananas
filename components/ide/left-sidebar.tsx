@@ -6,6 +6,7 @@ import {
 	ChevronDown,
 	ChevronRight,
 	FolderOpen,
+	Home,
 	Plus,
 	Settings,
 	Sparkles,
@@ -60,7 +61,7 @@ export function LeftSidebar() {
 		currentProject,
 		currentProjectId,
 		setCurrentProject,
-		setCurrentProjectId,
+		switchProject,
 		openTab,
 		setActionContext,
 		toggleLeftSidebar,
@@ -86,7 +87,7 @@ export function LeftSidebar() {
 					setProjects(data);
 					// Auto-select first project if none selected
 					if (!currentProjectId && data.length > 0) {
-						setCurrentProjectId(data[0].id);
+						switchProject(data[0].id, data[0].name);
 					}
 				}
 			} catch (error) {
@@ -96,7 +97,7 @@ export function LeftSidebar() {
 			}
 		}
 		fetchProjects();
-	}, [currentProjectId, setCurrentProjectId]);
+	}, [currentProjectId, switchProject]);
 
 	// Fetch current project details
 	const fetchProjectDetails = useCallback(async () => {
@@ -124,7 +125,10 @@ export function LeftSidebar() {
 	}, [fetchProjectDetails]);
 
 	const handleProjectSelect = (projectId: string) => {
-		setCurrentProjectId(projectId);
+		const project = projects.find((p) => p.id === projectId);
+		if (project) {
+			switchProject(projectId, project.name);
+		}
 	};
 
 	const handleCharacterClick = (character: CharacterWithAssets) => {
@@ -178,7 +182,7 @@ export function LeftSidebar() {
 
 			const newProject = await res.json();
 			setProjects((prev) => [{ ...newProject, _count: { characters: 0, animations: 0 } }, ...prev]);
-			setCurrentProjectId(newProject.id);
+			switchProject(newProject.id, newProject.name);
 			setNewProjectOpen(false);
 			setNewProjectName("");
 			setNewProjectDesc("");
@@ -324,8 +328,8 @@ export function LeftSidebar() {
 						className="w-full mt-2 justify-start text-muted-foreground hover:text-foreground"
 						onClick={handleProjectClick}
 					>
-						<FolderOpen className="h-4 w-4 mr-2" />
-						View Project Details
+						<Home className="h-4 w-4 mr-2" />
+						Project Home
 					</Button>
 				)}
 			</div>
@@ -393,7 +397,7 @@ export function LeftSidebar() {
 									onClick={handleNewCharacter}
 								>
 									<Plus className="h-3 w-3 mr-2" />
-									Add Character
+									New
 								</Button>
 							</div>
 						</CollapsibleContent>
@@ -453,7 +457,7 @@ export function LeftSidebar() {
 									onClick={handleNewAnimation}
 								>
 									<Plus className="h-3 w-3 mr-2" />
-									Add Animation
+									New
 								</Button>
 							</div>
 						</CollapsibleContent>

@@ -115,6 +115,7 @@ interface AppState {
   // Actions
   setCurrentProject: (project: ProjectWithRelations | null) => void;
   setCurrentProjectId: (id: string | null) => void;
+  switchProject: (projectId: string, projectName: string) => void;
   refreshCurrentProject: () => Promise<void>;
 
   openTab: (type: TabType, entityId: string, label: string) => void;
@@ -149,6 +150,20 @@ export const useAppStore = create<AppState>()(
       setCurrentProject: (project) =>
         set({ currentProject: project, currentProjectId: project?.id ?? null }),
       setCurrentProjectId: (id) => set({ currentProjectId: id }),
+      switchProject: (projectId, projectName) => {
+        const projectTab: Tab = {
+          id: `project-${projectId}`,
+          type: "project",
+          entityId: projectId,
+          label: projectName,
+        };
+        set({
+          currentProjectId: projectId,
+          tabs: [projectTab],
+          activeTabId: projectTab.id,
+          actionContext: { type: "none" },
+        });
+      },
       refreshCurrentProject: async () => {
         const { currentProjectId } = get();
         if (!currentProjectId) return;
@@ -191,7 +206,17 @@ export const useAppStore = create<AppState>()(
       },
 
       closeTab: (tabId) => {
-        const { tabs, activeTabId } = get();
+        const { tabs, activeTabId, currentProjectId } = get();
+        const tabToClose = tabs.find((t) => t.id === tabId);
+
+        // Prevent closing current project tab
+        if (
+          tabToClose?.type === "project" &&
+          tabToClose.entityId === currentProjectId
+        ) {
+          return;
+        }
+
         const newTabs = tabs.filter((t) => t.id !== tabId);
         const closingActiveTab = activeTabId === tabId;
 
@@ -224,6 +249,8 @@ export const useAppStore = create<AppState>()(
       name: "megabananas-app-state",
       partialize: (state) => ({
         currentProjectId: state.currentProjectId,
+        tabs: state.tabs,
+        activeTabId: state.activeTabId,
         leftSidebarOpen: state.leftSidebarOpen,
         rightSidebarOpen: state.rightSidebarOpen,
       }),
