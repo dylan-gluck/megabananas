@@ -1,12 +1,13 @@
 "use client";
 
-import { PanelRightClose, X, Sparkles, Film, Wand2, Copy } from "lucide-react";
+import { PanelRightClose, X, Sparkles, Film, Wand2, Copy, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/lib/store";
 import { NewCharacterForm } from "./forms/new-character-form";
 import { NewAnimationForm } from "./forms/new-animation-form";
 import { EditCharacterForm } from "./forms/edit-character-form";
 import { GenerateVariationForm } from "./forms/generate-variation-form";
+import { AssetMetadataPanel } from "./forms/asset-metadata-panel";
 
 export function RightSidebar() {
 	const { actionContext, clearActionContext, toggleRightSidebar } =
@@ -67,6 +68,8 @@ function ActionContextIcon() {
 		case "edit-animation":
 		case "generate-frames":
 			return <Film className={iconClass} />;
+		case "view-asset":
+			return <ImageIcon className={iconClass} />;
 		default:
 			return <Wand2 className={iconClass} />;
 	}
@@ -88,6 +91,8 @@ function ActionContextTitle() {
 			return `Edit ${actionContext.animation.name}`;
 		case "generate-frames":
 			return `Generate ${actionContext.animation.name}`;
+		case "view-asset":
+			return "Asset Details";
 		default:
 			return "Actions";
 	}
@@ -110,6 +115,8 @@ function ActionContextContent() {
 			return <EditCharacterForm character={actionContext.character} />;
 		case "generate-variation":
 			return <GenerateVariationForm character={actionContext.character} />;
+		case "view-asset":
+			return <AssetMetadataPanel asset={actionContext.asset} />;
 		case "edit-animation":
 			return (
 				<div className="p-4 text-sm text-muted-foreground">

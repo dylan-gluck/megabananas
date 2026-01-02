@@ -3,9 +3,10 @@ id: task-7
 title: >-
   Create reusable AssetThumbnail component with context menu and asset detail
   view
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-01-02 16:25'
+updated_date: '2026-01-02 17:18'
 labels: []
 dependencies: []
 priority: high

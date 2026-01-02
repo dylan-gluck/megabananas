@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 // Tab types for the workspace
-export type TabType = "project" | "character" | "animation";
+export type TabType = "project" | "character" | "animation" | "asset";
 
 export interface Tab {
   id: string;
@@ -95,7 +95,8 @@ export type ActionContext =
   | { type: "edit-character"; character: CharacterWithAssets }
   | { type: "edit-animation"; animation: AnimationWithFrames }
   | { type: "generate-frames"; animation: AnimationWithFrames }
-  | { type: "generate-variation"; character: CharacterWithAssets };
+  | { type: "generate-variation"; character: CharacterWithAssets }
+  | { type: "view-asset"; asset: Asset };
 
 interface AppState {
   // Current project

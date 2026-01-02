@@ -7,14 +7,13 @@ import {
 	Plus,
 	Calendar,
 	Edit,
-	Star,
 	Loader2,
 	Image as ImageIcon,
 	Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
+import { AssetThumbnail } from "@/components/ui/asset-thumbnail";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -31,7 +30,6 @@ import {
 	useAppStore,
 	type CharacterWithAssets,
 	type AnimationWithFrames,
-	type Asset,
 	type Project,
 } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -286,7 +284,7 @@ export function CharacterView({ characterId }: CharacterViewProps) {
 						<div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
 							{/* Primary asset first */}
 							{primaryAsset && (
-								<AssetCard
+								<AssetThumbnail
 									asset={primaryAsset}
 									isPrimary
 									isSettingPrimary={settingPrimary === primaryAsset.id}
@@ -297,7 +295,7 @@ export function CharacterView({ characterId }: CharacterViewProps) {
 							{character.assets
 								.filter((a) => a.id !== primaryAsset?.id)
 								.map((asset) => (
-									<AssetCard
+									<AssetThumbnail
 										key={asset.id}
 										asset={asset}
 										isPrimary={false}
@@ -373,58 +371,6 @@ export function CharacterView({ characterId }: CharacterViewProps) {
 				</section>
 			</div>
 		</ScrollArea>
-	);
-}
-
-function AssetCard({
-	asset,
-	isPrimary,
-	isSettingPrimary,
-	onSetPrimary,
-}: {
-	asset: Asset;
-	isPrimary: boolean;
-	isSettingPrimary: boolean;
-	onSetPrimary: () => void;
-}) {
-	return (
-		<div
-			className={cn(
-				"group relative aspect-square rounded-lg border bg-muted overflow-hidden",
-				isPrimary ? "border-primary ring-2 ring-primary/20" : "border-border",
-			)}
-		>
-			<img
-				src={asset.filePath}
-				alt="Character variation"
-				className="w-full h-full object-cover"
-			/>
-			{isPrimary && (
-				<Badge className="absolute top-2 left-2" variant="secondary">
-					<Star className="h-3 w-3 mr-1 fill-current" />
-					Primary
-				</Badge>
-			)}
-			{!isPrimary && (
-				<div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-					<Button
-						size="sm"
-						variant="secondary"
-						onClick={onSetPrimary}
-						disabled={isSettingPrimary}
-					>
-						{isSettingPrimary ? (
-							<>
-								<Loader2 className="h-3 w-3 mr-1 animate-spin" />
-								Setting...
-							</>
-						) : (
-							"Set as Primary"
-						)}
-					</Button>
-				</div>
-			)}
-		</div>
 	);
 }
 

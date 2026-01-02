@@ -1,9 +1,10 @@
 ---
 id: task-6
 title: Add project-level Reference Assets
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-01-02 16:12'
+updated_date: '2026-01-02 17:00'
 labels: []
 dependencies: []
 priority: high
