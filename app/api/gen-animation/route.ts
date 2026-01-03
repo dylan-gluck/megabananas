@@ -145,6 +145,10 @@ export async function POST(request: NextRequest) {
               (f) => f.index === i,
             )?.prompt;
 
+            // Determine reference mode for prompt context
+            const referenceMode: "character" | "previous" | "dual" =
+              i === 0 ? "character" : i >= 4 ? "dual" : "previous";
+
             const framePrompt = buildFramePrompt({
               sequencePrompt,
               frameIndex: i,
@@ -153,15 +157,23 @@ export async function POST(request: NextRequest) {
               characterName: animation.character.name,
               animationName: animation.name,
               anglePreset,
+              referenceMode,
             });
 
             // Build reference images:
             // - Frame 0: character image only (establish character)
-            // - Frame 1+: previous frame only (maintain continuity)
+            // - Frame 1-3: previous frame only (short sequences)
+            // - Frame 4+: character image + previous frame (prevent style drift)
+            const characterRef: ImageContent = {
+              mimeType: "image/png",
+              data: characterImageBase64,
+            };
             const referenceImages: ImageContent[] =
               i === 0
-                ? [{ mimeType: "image/png", data: characterImageBase64 }]
-                : [generatedFrameImages[i - 1]];
+                ? [characterRef]
+                : i >= 4
+                  ? [characterRef, generatedFrameImages[i - 1]]
+                  : [generatedFrameImages[i - 1]];
 
             // Generate frame
             const result = await generateImage(framePrompt, referenceImages, {

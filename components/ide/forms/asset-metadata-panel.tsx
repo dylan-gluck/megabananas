@@ -1,7 +1,7 @@
 "use client";
 
 import { formatDistanceToNow } from "date-fns";
-import { Calendar, MessageSquare, Settings, Image as ImageIcon, Download, Trash2 } from "lucide-react";
+import { Calendar, MessageSquare, Settings, Image as ImageIcon, Download, Trash2, Copy } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -51,8 +51,8 @@ export function AssetMetadataPanel({ asset }: AssetMetadataPanelProps) {
   };
 
   return (
-    <ScrollArea className="h-full">
-      <div className="p-4 space-y-6">
+    <ScrollArea className="h-full w-full">
+      <div className="p-4 space-y-6 overflow-hidden">
         {/* Preview thumbnail */}
         <div className="aspect-square rounded-lg border border-border bg-muted overflow-hidden">
           <img
@@ -105,7 +105,7 @@ export function AssetMetadataPanel({ asset }: AssetMetadataPanelProps) {
               <MessageSquare className="h-3.5 w-3.5" />
               User Prompt
             </Label>
-            <p className="text-sm text-foreground bg-muted/50 p-2 rounded-md">
+            <p className="text-sm text-foreground bg-muted/50 p-2 rounded-md break-words">
               {asset.userPrompt}
             </p>
           </div>
@@ -118,7 +118,7 @@ export function AssetMetadataPanel({ asset }: AssetMetadataPanelProps) {
               <Settings className="h-3.5 w-3.5" />
               System Prompt
             </Label>
-            <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded-md whitespace-pre-wrap">
+            <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded-md whitespace-pre-wrap break-words">
               {asset.systemPrompt}
             </p>
           </div>
@@ -158,9 +158,22 @@ export function AssetMetadataPanel({ asset }: AssetMetadataPanelProps) {
         {/* File path */}
         <div className="space-y-2">
           <Label className="text-xs text-muted-foreground">File Path</Label>
-          <p className="text-xs font-mono text-muted-foreground break-all">
-            {asset.filePath}
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-xs font-mono text-muted-foreground truncate flex-1 min-w-0">
+              {asset.filePath}
+            </p>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 shrink-0"
+              onClick={() => {
+                navigator.clipboard.writeText(asset.filePath);
+                toast.success("Path copied");
+              }}
+            >
+              <Copy className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
       </div>
     </ScrollArea>

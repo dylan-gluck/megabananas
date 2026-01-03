@@ -8,6 +8,8 @@ export interface BuildFramePromptParams {
   characterName: string;
   animationName: string;
   anglePreset?: string;
+  /** Reference mode: character (frame 0), previous (frames 1-3), dual (frames 4+) */
+  referenceMode?: "character" | "previous" | "dual";
 }
 
 export function buildFramePrompt(params: BuildFramePromptParams): string {
@@ -19,9 +21,9 @@ export function buildFramePrompt(params: BuildFramePromptParams): string {
     characterName,
     animationName,
     anglePreset,
+    referenceMode = frameIndex === 0 ? "character" : "previous",
   } = params;
 
-  const positionContext = getPositionContext(frameIndex, totalFrames);
   const angleOption = characterPresets.angles.find(
     (o) => o.value === anglePreset,
   );
@@ -38,15 +40,46 @@ export function buildFramePrompt(params: BuildFramePromptParams): string {
     lines.push(`View angle: ${angleFragment}`);
   }
 
-  lines.push(
-    "",
-    positionContext,
-    "",
-    "Requirements:",
-    "- Maintain exact character appearance, style, and proportions from the reference character image",
-    "- Ensure smooth visual continuity with previous frame(s) shown in references",
-    "- Keep consistent lighting, color palette, and art style throughout",
-  );
+  lines.push("");
+
+  // Reference context based on what images are provided
+  if (referenceMode === "character") {
+    // Frame 0: only character reference
+    lines.push(
+      "The reference image shows the character. Use it to establish:",
+      "- Exact visual style, proportions, and rendering",
+      "- Color palette and character details",
+      "",
+      "This is the FIRST frame - create the starting pose for the animation.",
+      "The pose should naturally lead into the subsequent motion.",
+    );
+  } else if (referenceMode === "dual") {
+    // Frames 4+: character + previous frame
+    lines.push(
+      "Two reference images are provided:",
+      "1. CHARACTER reference (first image) - match this exact style and appearance",
+      "2. PREVIOUS FRAME (second image) - continue the motion from this pose",
+      "",
+      getMotionProgressContext(frameIndex, totalFrames),
+      "",
+      "Requirements:",
+      "- Match character style/colors from the character reference",
+      "- ADVANCE the motion from the previous frame's pose",
+      "- Keep consistent lighting and art style",
+    );
+  } else {
+    // Frames 1-3: only previous frame
+    lines.push(
+      "The reference image shows the PREVIOUS frame in this sequence.",
+      "",
+      getMotionProgressContext(frameIndex, totalFrames),
+      "",
+      "Requirements:",
+      "- Match the exact visual style from the reference",
+      "- ADVANCE the motion - show the next phase of movement",
+      "- Keep consistent lighting, proportions, and colors",
+    );
+  }
 
   if (perFrameInstruction) {
     lines.push(
@@ -58,15 +91,17 @@ export function buildFramePrompt(params: BuildFramePromptParams): string {
   return lines.join("\n");
 }
 
-function getPositionContext(frameIndex: number, totalFrames: number): string {
-  if (frameIndex === 0) {
-    return "This is the FIRST frame - establish the starting pose of the animation sequence.";
-  }
-  if (frameIndex === totalFrames - 1) {
-    return "This is the FINAL frame - complete the animation sequence, returning to or near the starting position for looping.";
-  }
+function getMotionProgressContext(
+  frameIndex: number,
+  totalFrames: number,
+): string {
   const progress = Math.round(((frameIndex + 1) / totalFrames) * 100);
-  return `This is frame ${frameIndex + 1} of ${totalFrames} (${progress}% through the sequence) - continue the motion smoothly from the previous frame.`;
+  const isFinal = frameIndex === totalFrames - 1;
+
+  if (isFinal) {
+    return "This is the FINAL frame - complete the motion, returning toward the starting pose for seamless looping.";
+  }
+  return `Frame ${frameIndex + 1} of ${totalFrames} (${progress}% through) - progress the motion naturally.`;
 }
 
 export function buildSystemPromptForAnimation(

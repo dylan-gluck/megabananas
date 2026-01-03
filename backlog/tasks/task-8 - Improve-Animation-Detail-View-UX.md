@@ -1,9 +1,10 @@
 ---
 id: task-8
 title: Improve Animation Detail View UX
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-01-02 19:45'
+updated_date: '2026-01-02 19:49'
 labels: []
 dependencies: []
 priority: medium

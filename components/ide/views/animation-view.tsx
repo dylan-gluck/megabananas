@@ -2,11 +2,28 @@
 
 import { useEffect, useState, useRef } from "react";
 import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
   Film,
   Play,
   Pause,
   Plus,
-  Edit,
+  Download,
   Calendar,
   Loader2,
   RotateCcw,
@@ -16,6 +33,7 @@ import {
   X,
   Check,
   AlertCircle,
+  GripVertical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -29,6 +47,7 @@ import {
   type Project,
   type Asset,
 } from "@/lib/store";
+import { AssetThumbnail } from "@/components/ui/asset-thumbnail";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 
@@ -287,6 +306,89 @@ export function AnimationView({ animationId }: AnimationViewProps) {
     }
   };
 
+  const handleDeleteAnimation = async () => {
+    if (!animation) return;
+    try {
+      const res = await fetch(`/api/animations/${animation.id}`, { method: "DELETE" });
+      if (res.ok) {
+        toast.success("Animation deleted");
+        await refreshCurrentProject();
+        // Close the current tab
+        openTab("character", animation.character.id, animation.character.name);
+      } else {
+        toast.error("Failed to delete animation");
+      }
+    } catch {
+      toast.error("Failed to delete animation");
+    }
+  };
+
+  const handleDownloadFrames = async () => {
+    if (!animation || animation.frames.length === 0) return;
+
+    for (const frame of animation.frames) {
+      const link = document.createElement("a");
+      link.href = frame.asset.filePath;
+      link.download = frame.asset.filePath.split("/").pop() || `frame-${frame.frameIndex}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      // Small delay between downloads to avoid browser blocking
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    toast.success(`Downloaded ${animation.frames.length} frames`);
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || !animation || active.id === over.id) return;
+
+    const oldIndex = animation.frames.findIndex((f) => f.id === active.id);
+    const newIndex = animation.frames.findIndex((f) => f.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    // Optimistically update local state
+    const newFrames = arrayMove(animation.frames, oldIndex, newIndex);
+    setAnimation({ ...animation, frames: newFrames });
+
+    // Adjust currentFrame if needed
+    if (currentFrame === oldIndex) {
+      setCurrentFrame(newIndex);
+    } else if (oldIndex < currentFrame && newIndex >= currentFrame) {
+      setCurrentFrame(currentFrame - 1);
+    } else if (oldIndex > currentFrame && newIndex <= currentFrame) {
+      setCurrentFrame(currentFrame + 1);
+    }
+
+    // Persist to server
+    try {
+      const res = await fetch(`/api/animations/${animation.id}/reorder`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ frameIds: newFrames.map((f) => f.id) }),
+      });
+      if (!res.ok) {
+        throw new Error("Failed to reorder");
+      }
+    } catch {
+      // Revert on error
+      toast.error("Failed to reorder frames");
+      await fetchAnimation();
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -367,16 +469,20 @@ export function AnimationView({ animationId }: AnimationViewProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() =>
-                setActionContext({
-                  type: "edit-animation",
-                  animation: animation,
-                })
-              }
+              onClick={handleDownloadFrames}
+              disabled={isGenerating || !hasFrames}
+            >
+              <Download className="h-4 w-4 mr-1" />
+              Download Frames
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDeleteAnimation}
               disabled={isGenerating}
             >
-              <Edit className="h-4 w-4 mr-1" />
-              Edit
+              <Trash2 className="h-4 w-4 mr-1" />
+              Delete
             </Button>
           </div>
         </div>
@@ -602,18 +708,28 @@ export function AnimationView({ animationId }: AnimationViewProps) {
               </Button>
             </div>
           ) : hasFrames ? (
-            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
-              {animation.frames.map((frame, index) => (
-                <FrameCard
-                  key={frame.id}
-                  frame={frame}
-                  index={index}
-                  isActive={index === currentFrame}
-                  onClick={() => goToFrame(index)}
-                  onDelete={() => handleDeleteFrame(frame.id)}
-                />
-              ))}
-            </div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={animation.frames.map((f) => f.id)}
+                strategy={rectSortingStrategy}
+              >
+                <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
+                  {animation.frames.map((frame, index) => (
+                    <SortableFrame
+                      key={frame.id}
+                      frame={frame}
+                      index={index}
+                      isActive={index === currentFrame}
+                      onDelete={() => handleDeleteFrame(frame.id)}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           ) : null}
         </section>
       </div>
@@ -621,91 +737,64 @@ export function AnimationView({ animationId }: AnimationViewProps) {
   );
 }
 
-function FrameCard({
-  frame,
-  index,
-  isActive,
-  onClick,
-  onDelete,
-}: {
+interface SortableFrameProps {
   frame: FrameWithAsset;
   index: number;
   isActive: boolean;
-  onClick: () => void;
-  onDelete: () => Promise<void>;
-}) {
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  onDelete: () => void;
+}
 
-  const handleDelete = async () => {
-    setIsDeleting(true);
-    await onDelete();
-    setIsDeleting(false);
-    setConfirmDelete(false);
+function SortableFrame({ frame, index, isActive, onDelete }: SortableFrameProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: frame.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
   };
 
   return (
-    <div
-      className={cn(
-        "group relative aspect-square rounded-lg border overflow-hidden cursor-pointer transition-all",
-        isActive
-          ? "border-primary ring-2 ring-primary/20"
-          : "border-border hover:border-primary/50"
-      )}
-      onClick={onClick}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") onClick();
-      }}
-    >
-      <img
-        src={frame.asset.filePath}
-        alt={`Frame ${index + 1}`}
-        className="w-full h-full object-cover"
+    <div ref={setNodeRef} style={style} className="relative group/frame">
+      <AssetThumbnail
+        asset={frame.asset}
+        onDelete={onDelete}
+        className={cn(isActive && "ring-2 ring-primary")}
       />
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-1">
+      {/* Frame index overlay */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-1 pointer-events-none rounded-b-lg">
         <span className="text-[10px] text-white font-medium">{index + 1}</span>
       </div>
-
-      {/* Hover actions */}
-      <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        {confirmDelete ? (
-          <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-            <Button
-              variant="destructive"
-              size="icon"
-              className="h-6 w-6"
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <Check className="h-3 w-3" />
-              )}
-            </Button>
-            <Button
-              variant="secondary"
-              size="icon"
-              className="h-6 w-6"
-              onClick={() => setConfirmDelete(false)}
-              disabled={isDeleting}
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          </div>
-        ) : (
-          <Button
-            variant="secondary"
-            size="icon"
-            className="h-6 w-6"
-            onClick={(e) => {
-              e.stopPropagation();
-              setConfirmDelete(true);
-            }}
-          >
-            <Trash2 className="h-3 w-3" />
-          </Button>
+      {/* Drag handle + delete - higher z-index to stay above thumbnail hover */}
+      <div
+        className={cn(
+          "absolute top-1 left-1 z-20 flex gap-0.5 transition-opacity",
+          isDragging ? "opacity-100" : "opacity-0 group-hover/frame:opacity-100"
         )}
+      >
+        <div
+          {...attributes}
+          {...listeners}
+          className="p-1 rounded bg-black/60 cursor-grab active:cursor-grabbing"
+        >
+          <GripVertical className="h-3 w-3 text-white" />
+        </div>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+          className="p-1 rounded bg-black/60 hover:bg-red-600 transition-colors"
+        >
+          <Trash2 className="h-3 w-3 text-white" />
+        </button>
       </div>
     </div>
   );
