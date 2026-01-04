@@ -1,7 +1,7 @@
 ---
 id: task-4
 title: Implement Sequential Frame Animation Workflow
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-01-02 00:18'
 updated_date: '2026-01-02 18:40'

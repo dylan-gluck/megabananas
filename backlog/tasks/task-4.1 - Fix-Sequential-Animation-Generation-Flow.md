@@ -1,7 +1,7 @@
 ---
 id: task-4.1
 title: Fix Sequential Animation Generation Flow
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-01-02 19:02'
 labels: []

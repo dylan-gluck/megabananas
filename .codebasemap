@@ -2,8 +2,8 @@
   "metadata": {
     "version": 1,
     "root": "/Users/dylan/Workspace/vibe/megabananas",
-    "createdAt": "2026-01-04T21:07:10.058Z",
-    "updatedAt": "2026-01-04T21:07:10.058Z",
+    "createdAt": "2026-01-04T22:23:18.671Z",
+    "updatedAt": "2026-01-04T22:23:18.671Z",
     "totalFiles": 107
   },
   "tree": {
@@ -2685,11 +2685,7 @@
           "from": "lucide-react",
           "kind": "import",
           "imported": [
-            "Loader2",
-            "Plus",
-            "Trash2",
-            "Play",
-            "Layers"
+            "Loader2"
           ]
         },
         {
@@ -2777,10 +2773,9 @@
       "classes": [],
       "constants": [
         {
-          "name": "defaultSequence",
-          "initKind": "object",
-          "isExported": false,
-          "type": "Sequence"
+          "name": "FRAME_PRESETS",
+          "initKind": "array",
+          "isExported": false
         }
       ]
     },
@@ -3266,7 +3261,8 @@
             "Edit",
             "Loader2",
             "ImageIcon",
-            "Trash2"
+            "Trash2",
+            "Layers"
           ]
         },
         {
@@ -3319,6 +3315,7 @@
             "useAppStore",
             "CharacterWithAssets",
             "AnimationWithFrames",
+            "SpriteSheetWithAsset",
             "Project"
           ]
         },
@@ -3356,6 +3353,17 @@
             {
               "name": "unknown",
               "type": "{\n\tanimation: AnimationWithFrames;\n\tonClick: () => void;\n}"
+            }
+          ],
+          "isAsync": false,
+          "isExported": false
+        },
+        {
+          "name": "SpriteSheetRow",
+          "params": [
+            {
+              "name": "unknown",
+              "type": "{\n\tspriteSheet: SpriteSheetWithAsset;\n\tonClick: () => void;\n}"
             }
           ],
           "isAsync": false,
