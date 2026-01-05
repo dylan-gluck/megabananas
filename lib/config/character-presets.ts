@@ -70,6 +70,12 @@ export const characterPresets: CharacterPresets = {
       promptFragment:
         "flat design style, minimal shading, solid colors, vector-like appearance",
     },
+    {
+      value: "3d-render",
+      label: "3D Render",
+      promptFragment:
+        "3D rendered style, Cinema 4D aesthetic, soft lighting, smooth subsurface scattering, octane render quality",
+    },
   ],
   angles: [
     {
@@ -96,6 +102,11 @@ export const characterPresets: CharacterPresets = {
       value: "dynamic",
       label: "Dynamic Pose",
       promptFragment: "dynamic action pose, expressive movement",
+    },
+    {
+      value: "t-pose",
+      label: "T-Pose",
+      promptFragment: "T-pose stance, arms extended horizontally, neutral rigging pose",
     },
   ],
 };
