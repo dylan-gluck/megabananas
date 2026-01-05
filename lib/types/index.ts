@@ -4,10 +4,11 @@ export type {
   Asset,
   Character,
   Frame,
+  Scene,
 } from "@/lib/generated/prisma/client";
 
 // Client-safe AssetType (mirrors Prisma enum without runtime dependency)
-export type AssetType = "reference" | "character" | "frame" | "spritesheet";
+export type AssetType = "reference" | "character" | "frame" | "spritesheet" | "scene";
 
 // Extended types with relations
 import type {
@@ -17,6 +18,7 @@ import type {
   Animation as PrismaAnimation,
   Frame,
   SpriteSheet as PrismaSpriteSheet,
+  Scene,
 } from "@/lib/generated/prisma/client";
 
 // Typed generation settings
@@ -58,6 +60,10 @@ export interface SpriteSheetWithAsset extends SpriteSheet {
   character: Character;
 }
 
+export interface SceneWithAsset extends Scene {
+  primaryAsset: Asset | null;
+}
+
 export interface CharacterWithAssets extends Character {
   primaryAsset: Asset | null;
   assets: Asset[];
@@ -67,6 +73,7 @@ export interface CharacterWithAssets extends Character {
 
 export interface ProjectWithRelations extends Project {
   characters: CharacterWithAssets[];
+  scenes: SceneWithAsset[];
 }
 
 // Extended animation type with character's primary asset and variations for generation

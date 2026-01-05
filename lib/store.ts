@@ -6,6 +6,7 @@ import type {
   AnimationWithCharacterAsset,
   CharacterWithAssets,
   ProjectWithRelations,
+  SceneWithAsset,
 } from "@/lib/types";
 
 // Tab types for the workspace
@@ -15,7 +16,8 @@ export type TabType =
   | "animation"
   | "asset"
   | "spritesheet"
-  | "reference-assets";
+  | "reference-assets"
+  | "scene";
 
 export interface Tab {
   id: string;
@@ -34,7 +36,9 @@ export type ActionContext =
   | { type: "edit-animation"; animation: AnimationWithFrames }
   | { type: "new-frame"; animation: AnimationWithCharacterAsset }
   | { type: "generate-variation"; character: CharacterWithAssets }
-  | { type: "view-asset"; asset: Asset };
+  | { type: "view-asset"; asset: Asset }
+  | { type: "new-scene"; projectId: string }
+  | { type: "edit-scene"; scene: SceneWithAsset };
 
 interface AppState {
   // Current project
@@ -209,11 +213,13 @@ export type {
   Character,
   Animation,
   Frame,
+  Scene,
   SpriteSheet,
   FrameWithAsset,
   AnimationWithFrames,
   CharacterWithAssets,
   SpriteSheetWithAsset,
+  SceneWithAsset,
   ProjectWithRelations,
   AnimationWithCharacterAsset,
   AnimationGenerationSettings,

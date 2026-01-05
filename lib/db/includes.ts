@@ -83,12 +83,31 @@ export const characterWithDetails = {
 } satisfies Prisma.CharacterInclude;
 
 /**
+ * Include pattern for Scene with primary asset.
+ */
+export const sceneWithAsset = {
+  primaryAsset: true,
+} satisfies Prisma.SceneInclude;
+
+/**
+ * Include pattern for Scene with details (includes project).
+ */
+export const sceneWithDetails = {
+  primaryAsset: true,
+  project: true,
+} satisfies Prisma.SceneInclude;
+
+/**
  * Full Project include pattern with all relations.
  */
 export const projectWithRelations = {
   characters: {
     orderBy: { updatedAt: "desc" },
     include: characterWithAssets,
+  },
+  scenes: {
+    orderBy: { updatedAt: "desc" },
+    include: sceneWithAsset,
   },
 } satisfies Prisma.ProjectInclude;
 

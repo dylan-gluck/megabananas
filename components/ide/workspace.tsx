@@ -1,6 +1,6 @@
 "use client";
 
-import { X, FolderOpen, Sparkles, Film, Layers, PanelLeft, PanelRight, Image as ImageIcon, ImagePlus } from "lucide-react";
+import { X, FolderOpen, Sparkles, Film, Layers, PanelLeft, PanelRight, Image as ImageIcon, ImagePlus, Mountain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useAppStore, type Tab } from "@/lib/store";
@@ -19,6 +19,7 @@ const tabIcons = {
 	asset: ImageIcon,
 	spritesheet: Layers,
 	"reference-assets": ImagePlus,
+	scene: Mountain,
 };
 
 export function Workspace() {
@@ -142,9 +143,27 @@ function TabContent({ tab }: { tab: Tab }) {
 			return <SpriteSheetView spriteSheetId={tab.entityId} />;
 		case "reference-assets":
 			return <ReferenceAssetsView projectId={tab.entityId} />;
+		case "scene":
+			return <SceneViewPlaceholder sceneId={tab.entityId} />;
 		default:
 			return <EmptyState />;
 	}
+}
+
+function SceneViewPlaceholder({ sceneId }: { sceneId: string }) {
+	return (
+		<div className="h-full flex flex-col items-center justify-center text-center p-8">
+			<div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
+				<Mountain className="h-8 w-8 text-muted-foreground" />
+			</div>
+			<h3 className="text-lg font-medium text-foreground mb-1">
+				Scene View
+			</h3>
+			<p className="text-sm text-muted-foreground mb-4 max-w-sm">
+				Scene detail view coming soon. Use the edit form in the sidebar to manage this scene.
+			</p>
+		</div>
+	);
 }
 
 function EmptyState() {

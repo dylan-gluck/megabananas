@@ -13,6 +13,7 @@ import {
 	PanelLeftClose,
 	Loader2,
 	ImagePlus,
+	Mountain,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,7 +46,7 @@ import {
 } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
-import { useAppStore, type CharacterWithAssets } from "@/lib/store";
+import { useAppStore, type CharacterWithAssets, type SceneWithAsset } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 interface ProjectListItem {
@@ -73,6 +74,7 @@ export function LeftSidebar() {
 
 	const [projects, setProjects] = useState<ProjectListItem[]>([]);
 	const [charactersOpen, setCharactersOpen] = useState(true);
+	const [scenesOpen, setScenesOpen] = useState(true);
 	const [isLoadingProjects, setIsLoadingProjects] = useState(true);
 	const [newProjectOpen, setNewProjectOpen] = useState(false);
 	const [newProjectName, setNewProjectName] = useState("");
@@ -143,6 +145,16 @@ export function LeftSidebar() {
 	const handleNewCharacter = () => {
 		if (currentProject) {
 			setActionContext({ type: "new-character", projectId: currentProject.id });
+		}
+	};
+
+	const handleSceneClick = (scene: SceneWithAsset) => {
+		openTab("scene", scene.id, scene.name);
+	};
+
+	const handleNewScene = () => {
+		if (currentProject) {
+			setActionContext({ type: "new-scene", projectId: currentProject.id });
 		}
 	};
 
@@ -458,6 +470,72 @@ export function LeftSidebar() {
 									size="sm"
 									className="w-full justify-start h-8 px-2 text-sm text-muted-foreground"
 									onClick={handleNewCharacter}
+								>
+									<Plus className="h-3 w-3 mr-2" />
+									New
+								</Button>
+							</div>
+						</CollapsibleContent>
+					</Collapsible>
+
+					{/* Scenes Section */}
+					<Collapsible open={scenesOpen} onOpenChange={setScenesOpen}>
+						<div className="flex items-center justify-between">
+							<CollapsibleTrigger asChild>
+								<Button
+									variant="ghost"
+									size="sm"
+									className="w-full justify-start gap-2 px-2"
+								>
+									{scenesOpen ? (
+										<ChevronDown className="h-4 w-4" />
+									) : (
+										<ChevronRight className="h-4 w-4" />
+									)}
+									<Mountain className="h-4 w-4 text-primary" />
+									<span className="flex-1 text-left text-sm font-medium">
+										Scenes
+									</span>
+									<span className="text-xs text-muted-foreground">
+										{currentProject?.scenes?.length || 0}
+									</span>
+								</Button>
+							</CollapsibleTrigger>
+						</div>
+						<CollapsibleContent className="pt-1">
+							<div className="ml-4 pl-2 border-l border-sidebar-border space-y-0.5">
+								{currentProject?.scenes?.map((scene) => (
+									<Button
+										key={scene.id}
+										variant="ghost"
+										size="sm"
+										className="w-full justify-start h-8 px-2 text-sm font-normal"
+										onClick={() => handleSceneClick(scene)}
+									>
+										<div
+											className="w-5 h-5 rounded bg-muted flex-shrink-0 mr-2 overflow-hidden"
+											style={{
+												backgroundImage: scene.primaryAsset
+													? `url(${scene.primaryAsset.filePath})`
+													: undefined,
+												backgroundSize: "cover",
+												backgroundPosition: "center",
+											}}
+										/>
+										<span className="truncate">{scene.name}</span>
+									</Button>
+								))}
+								{(!currentProject ||
+									!currentProject.scenes?.length) && (
+									<p className="text-xs text-muted-foreground px-2 py-1">
+										No scenes yet
+									</p>
+								)}
+								<Button
+									variant="ghost"
+									size="sm"
+									className="w-full justify-start h-8 px-2 text-sm text-muted-foreground"
+									onClick={handleNewScene}
 								>
 									<Plus className="h-3 w-3 mr-2" />
 									New

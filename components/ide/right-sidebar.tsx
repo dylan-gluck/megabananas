@@ -1,6 +1,6 @@
 "use client";
 
-import { PanelRightClose, X, Sparkles, Film, Layers, Copy, Image as ImageIcon } from "lucide-react";
+import { PanelRightClose, X, Sparkles, Film, Layers, Copy, Image as ImageIcon, Mountain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/lib/store";
 import { NewCharacterForm } from "./forms/new-character-form";
@@ -10,6 +10,8 @@ import { EditCharacterForm } from "./forms/edit-character-form";
 import { GenerateVariationForm } from "./forms/generate-variation-form";
 import { NewFrameForm } from "./forms/new-frame-form";
 import { AssetMetadataPanel } from "./forms/asset-metadata-panel";
+import { NewSceneForm } from "./forms/new-scene-form";
+import { EditSceneForm } from "./forms/edit-scene-form";
 
 export function RightSidebar() {
 	const { actionContext, clearActionContext, toggleRightSidebar } =
@@ -74,6 +76,9 @@ function ActionContextIcon() {
 			return <Layers className={iconClass} />;
 		case "view-asset":
 			return <ImageIcon className={iconClass} />;
+		case "new-scene":
+		case "edit-scene":
+			return <Mountain className={iconClass} />;
 		default:
 			return null;
 	}
@@ -99,6 +104,10 @@ function ActionContextTitle() {
 			return `New Frame: ${actionContext.animation.name}`;
 		case "view-asset":
 			return "Asset Details";
+		case "new-scene":
+			return "New Scene";
+		case "edit-scene":
+			return `Edit ${actionContext.scene.name}`;
 		default:
 			return "";
 	}
@@ -139,6 +148,10 @@ function ActionContextContent() {
 			);
 		case "new-frame":
 			return <NewFrameForm animation={actionContext.animation} />;
+		case "new-scene":
+			return <NewSceneForm projectId={actionContext.projectId} />;
+		case "edit-scene":
+			return <EditSceneForm scene={actionContext.scene} />;
 		default:
 			return null;
 	}

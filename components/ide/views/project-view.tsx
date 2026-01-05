@@ -13,6 +13,7 @@ import {
 	Trash2,
 	Upload,
 	Palette,
+	Mountain,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ import {
 	useAppStore,
 	type ProjectWithRelations,
 	type CharacterWithAssets,
+	type SceneWithAsset,
 	type Asset,
 } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -264,6 +266,61 @@ export function ProjectView({ projectId }: ProjectViewProps) {
 					)}
 				</section>
 
+				{/* Scenes Grid */}
+				<section className="space-y-4">
+					<div className="flex items-center justify-between">
+						<h2 className="text-lg font-semibold flex items-center gap-2">
+							<Mountain className="h-5 w-5 text-primary" />
+							Scenes
+						</h2>
+						<Button
+							size="sm"
+							onClick={() =>
+								setActionContext({ type: "new-scene", projectId })
+							}
+						>
+							<Plus className="h-4 w-4 mr-1" />
+							New Scene
+						</Button>
+					</div>
+
+					{(!project.scenes || project.scenes.length === 0) ? (
+						<EmptySection
+							icon={Mountain}
+							title="No scenes yet"
+							description="Create your first scene for background assets"
+							action={() =>
+								setActionContext({ type: "new-scene", projectId })
+							}
+							actionLabel="Create Scene"
+						/>
+					) : (
+						<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+							{project.scenes.map((scene) => (
+								<SceneCard
+									key={scene.id}
+									scene={scene}
+									onClick={() =>
+										openTab("scene", scene.id, scene.name)
+									}
+									onEdit={() =>
+										setActionContext({ type: "edit-scene", scene })
+									}
+									onDelete={async () => {
+										const res = await fetch(`/api/scenes/${scene.id}`, { method: "DELETE" });
+										if (res.ok) {
+											toast.success(`Scene "${scene.name}" deleted`);
+											await refreshCurrentProject();
+										} else {
+											toast.error("Failed to delete scene");
+										}
+									}}
+								/>
+							))}
+						</div>
+					)}
+				</section>
+
 				{/* References Section */}
 				<section className="space-y-4">
 					<div className="flex items-center justify-between">
@@ -446,6 +503,108 @@ function CharacterCard({
 					{character.assets.length} variation
 					{character.assets.length !== 1 ? "s" : ""}
 				</p>
+			</div>
+		</div>
+	);
+}
+
+function SceneCard({
+	scene,
+	onClick,
+	onEdit,
+	onDelete,
+}: {
+	scene: SceneWithAsset;
+	onClick: () => void;
+	onEdit: () => void;
+	onDelete: () => Promise<void>;
+}) {
+	const thumbnail = scene.primaryAsset?.filePath;
+	const [confirmDelete, setConfirmDelete] = useState(false);
+	const [isDeleting, setIsDeleting] = useState(false);
+
+	const handleDelete = async () => {
+		setIsDeleting(true);
+		await onDelete();
+		setIsDeleting(false);
+		setConfirmDelete(false);
+	};
+
+	return (
+		<div
+			className={cn(
+				"group relative rounded-lg border border-border bg-card overflow-hidden cursor-pointer",
+				"hover:border-primary/50 hover:shadow-md transition-all",
+			)}
+			onClick={onClick}
+			onKeyDown={(e) => {
+				if (e.key === "Enter" || e.key === " ") onClick();
+			}}
+		>
+			<div className="aspect-video bg-muted relative">
+				{thumbnail ? (
+					<img
+						src={thumbnail}
+						alt={scene.name}
+						className="w-full h-full object-cover"
+					/>
+				) : (
+					<div className="w-full h-full flex items-center justify-center">
+						<Mountain className="h-8 w-8 text-muted-foreground" />
+					</div>
+				)}
+				<div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+					{confirmDelete ? (
+						<div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+							<Button
+								variant="destructive"
+								size="icon"
+								className="h-7 w-7"
+								onClick={handleDelete}
+								disabled={isDeleting}
+							>
+								{isDeleting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+							</Button>
+							<Button
+								variant="secondary"
+								size="icon"
+								className="h-7 w-7"
+								onClick={() => setConfirmDelete(false)}
+								disabled={isDeleting}
+							>
+								<X className="h-3 w-3" />
+							</Button>
+						</div>
+					) : (
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button
+									variant="secondary"
+									size="icon"
+									className="h-7 w-7"
+									onClick={(e) => e.stopPropagation()}
+								>
+									<MoreVertical className="h-4 w-4" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								<DropdownMenuItem onSelect={onEdit}>Edit</DropdownMenuItem>
+								<DropdownMenuItem
+									className="text-destructive"
+									onSelect={() => setConfirmDelete(true)}
+								>
+									Delete
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					)}
+				</div>
+			</div>
+			<div className="p-3">
+				<h3 className="font-medium text-sm truncate">{scene.name}</h3>
+				{scene.environment && (
+					<p className="text-xs text-muted-foreground">{scene.environment}</p>
+				)}
 			</div>
 		</div>
 	);

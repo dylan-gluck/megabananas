@@ -15,6 +15,7 @@ enum AssetType {
   character
   frame
   spritesheet
+  scene
 }
 
 // Top-level container for all work
@@ -37,6 +38,7 @@ model Project {
   characters   Character[]
   animations   Animation[]
   spriteSheets SpriteSheet[]
+  scenes       Scene[]
 
   @@index([name])
 }
@@ -69,8 +71,16 @@ model Asset {
   // SpriteSheet relation
   spriteSheet SpriteSheet? @relation("SpriteSheetAsset")
 
+  // Scene relation
+  scene   Scene?  @relation("SceneAssets", fields: [sceneId], references: [id], onDelete: SetNull)
+  sceneId String?
+
+  // Primary asset for scene (reverse)
+  primaryForScene Scene? @relation("ScenePrimaryAsset")
+
   @@index([projectId])
   @@index([characterId])
+  @@index([sceneId])
 }
 
 // Character with variations and primary asset
@@ -158,4 +168,33 @@ model SpriteSheet {
 
   @@index([projectId])
   @@index([characterId])
+}
+
+// Scene for background asset generation
+model Scene {
+  id          String   @id @default(cuid())
+  projectId   String
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Style metadata
+  artStyle   String?
+  mood       String?
+  timeOfDay  String?
+  environment String?
+  colorPalette String[]
+  styleNotes String?
+
+  // Primary asset reference
+  primaryAssetId String? @unique
+  primaryAsset   Asset?  @relation("ScenePrimaryAsset", fields: [primaryAssetId], references: [id], onDelete: SetNull)
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assets  Asset[] @relation("SceneAssets")
+
+  @@unique([projectId, name])
+  @@index([projectId])
 }
