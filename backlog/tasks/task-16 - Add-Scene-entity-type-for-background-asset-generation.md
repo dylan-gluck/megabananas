@@ -4,6 +4,7 @@ title: Add Scene entity type for background asset generation
 status: To Do
 assignee: []
 created_date: '2026-01-05 05:29'
+updated_date: '2026-01-05 06:11'
 labels:
   - scene
   - entity
@@ -16,114 +17,178 @@ priority: medium
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-Introduce a new Scene entity type that belongs to Projects for organizing background assets. Scenes store metadata about artistic style and will serve as parent containers for background-related asset types (backgrounds, maps, tilesets, tiles). This ticket covers the data model, UI integration (sidebar listing, project homepage grid), and CRUD routes—not the asset generation workflows.
+Introduce a Scene entity type for organizing background assets within Projects. Scenes store metadata about artistic style and serve as parent containers for background-related asset types. This task leverages the shared utilities from task-17 refactor: lib/types/index.ts for types, lib/db/includes.ts for Prisma include patterns, and lib/api/response.ts for API helpers. Covers data model, UI integration (sidebar listing, project homepage grid), and CRUD routes—not asset generation workflows.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 Scene model exists in Prisma schema with relations to Project and Asset (including primaryAsset)
-- [ ] #2 scene added to AssetType enum in schema
-- [ ] #3 Scene CRUD API routes functional at /api/scenes and /api/scenes/[id]
-- [ ] #4 Project GET endpoint includes scenes in response
-- [ ] #5 Scenes collapsible section in left sidebar lists project scenes with New button
-- [ ] #6 Scenes grid section on project homepage displays SceneCard components
-- [ ] #7 NewSceneForm allows creating scenes with name, description, artStyle, mood, timeOfDay, environment, styleNotes
-- [ ] #8 EditSceneForm allows updating scene metadata and shows primaryAsset preview
-- [ ] #9 Scenes can be deleted from project view
-- [ ] #10 Scene types (Scene, SceneWithAssets) added to store.ts
-- [ ] #11 ActionContext supports new-scene and edit-scene cases
-- [ ] #12 scene-presets.ts config created with styles, moods, timeOfDay, environments, and buildSceneSystemPrompt function
+- [ ] #2 scene added to AssetType enum in prisma/schema.prisma AND lib/types/index.ts
+- [ ] #3 Scene CRUD API routes at /api/scenes and /api/scenes/[id] using shared response helpers (badRequest, jsonCreated, serverError, notFound)
+- [ ] #4 sceneWithAsset and sceneWithDetails include patterns added to lib/db/includes.ts
+- [ ] #5 Scene and SceneWithAsset types exported from lib/types/index.ts
+- [ ] #6 projectWithRelations include updated to include scenes
+- [ ] #7 ProjectWithRelations type updated to include scenes array
+- [ ] #8 scene added to TabType union in lib/store.ts
+- [ ] #9 ActionContext supports new-scene and edit-scene cases importing SceneWithAsset from lib/types
+- [ ] #10 Scenes collapsible section in left-sidebar.tsx lists project scenes with New button
+- [ ] #11 Scenes grid section on project-view.tsx displays SceneCard components
+- [ ] #12 NewSceneForm allows creating scenes with name, description, artStyle, mood, timeOfDay, environment, styleNotes
+- [ ] #13 EditSceneForm allows updating scene metadata and shows primaryAsset preview
+- [ ] #14 scene-presets.ts config created following character-presets.ts pattern
 <!-- AC:END -->
 
 ## Implementation Plan
 
 <!-- SECTION:PLAN:BEGIN -->
 ### Step 1: Prisma Schema Updates
-**File: /Users/dylan/Workspace/vibe/megabananas/prisma/schema.prisma**
+**File: prisma/schema.prisma**
 
-1.1 Add `scene` to AssetType enum (line 13-18)
-1.2 Add Scene model (after line 161) with fields: id, projectId, name, description, createdAt, updatedAt, artStyle, mood, colorPalette, styleNotes, primaryAssetId, primaryAsset relation, project relation, assets relation
-1.3 Update Project model (lines 35-39) - add scenes relation
-1.4 Update Asset model (lines 59-73) - add scene relations (sceneId, scene, primaryForScene) and index
+1.1 Add `scene` to AssetType enum
+1.2 Add Scene model with fields: id, projectId, name, description, createdAt, updatedAt, artStyle, mood, colorPalette, styleNotes, primaryAssetId
+1.3 Add relations: project (Project), primaryAsset (Asset), assets (Asset[])
+1.4 Update Project model - add scenes relation
+1.5 Update Asset model - add sceneId field, scene relation, primaryForScene relation, and index
 
-### Step 2: Store Updates
-**File: /Users/dylan/Workspace/vibe/megabananas/lib/store.ts**
+### Step 2: Central Types Updates
+**File: lib/types/index.ts**
 
-2.1 Add "scene" to TabType (lines 5-11)
-2.2 Add Scene interface (after SpriteSheet ~line 99)
-2.3 Add SceneWithAssets interface (after SpriteSheetWithAsset ~line 121)
-2.4 Update Asset interface - add sceneId field
-2.5 Update ProjectWithRelations - add scenes array
-2.6 Add ActionContext cases: new-scene, edit-scene
+2.1 Add `"scene"` to AssetType union (line 10)
+2.2 Add `Scene` to Prisma re-exports (line 2-7)
+2.3 Add Scene import from Prisma client
+2.4 Add SceneWithAsset interface extending Scene with primaryAsset: Asset | null
 
-### Step 3: API Routes
+### Step 3: Prisma Includes Updates
+**File: lib/db/includes.ts**
 
-3.1 Create /app/api/scenes/route.ts - POST handler for creating scenes with validation
-3.2 Create /app/api/scenes/[id]/route.ts - GET, PATCH, DELETE handlers
-3.3 Update /app/api/projects/[id]/route.ts (lines 13-39) - add scenes to include block
+3.1 Add sceneWithAsset include pattern using `satisfies Prisma.SceneInclude`
+3.2 Add sceneWithDetails include pattern (includes project relation)
+3.3 Update projectWithRelations to include scenes with sceneWithAsset pattern
 
-### Step 4: Scene Presets Configuration
-**File: /Users/dylan/Workspace/vibe/megabananas/lib/config/scene-presets.ts (new file)**
+### Step 4: Store Updates
+**File: lib/store.ts**
 
-Create presets for: styles (pixel-art, anime, cartoon, realistic, watercolor, flat), moods (peaceful, dark, vibrant, mysterious, epic, cozy), timeOfDay (day, sunset, night, dawn), environments (forest, dungeon, city, castle, cave, ocean, mountains, sky). Include buildSceneSystemPrompt function.
+4.1 Import SceneWithAsset from "@/lib/types"
+4.2 Add "scene" to TabType union (after "reference-assets")
+4.3 Add ActionContext cases:
+    - { type: "new-scene"; projectId: string }
+    - { type: "edit-scene"; scene: SceneWithAsset }
 
-### Step 5: UI Components
+### Step 5: API Routes
+**File: app/api/scenes/route.ts (new)**
+- Import: badRequest, jsonCreated, serverError from "@/lib/api/response"
+- Import: sceneWithAsset from "@/lib/db/includes"
+- POST handler: validate name/projectId, create with include pattern
+- Follow app/api/characters/route.ts pattern exactly
 
-5.1 Update Left Sidebar (components/ide/left-sidebar.tsx):
-- Add scenesOpen state
-- Add handleSceneClick and handleNewScene handlers
-- Add Scenes collapsible section (after Characters section, line 449)
-- Add Mountain icon import, SceneWithAssets type import
+**File: app/api/scenes/[id]/route.ts (new)**
+- Import: jsonSuccess, notFound, serverError, badRequest from "@/lib/api/response"
+- Import: sceneWithDetails from "@/lib/db/includes"
+- GET: fetch with include, return jsonSuccess or notFound("Scene")
+- PATCH: update fields, return jsonSuccess
+- DELETE: delete scene, return jsonSuccess
 
-5.2 Update Project View (components/ide/views/project-view.tsx):
-- Add Mountain icon import
-- Add SceneWithAssets type import
-- Add Scenes grid section (after Characters section ~line 265)
-- Add SceneCard component (after CharacterCard ~line 452)
+### Step 6: Scene Presets Configuration
+**File: lib/config/scene-presets.ts (new)**
+- Follow lib/config/character-presets.ts pattern exactly
+- Export presets: styles, moods, timeOfDay, environments
+- Each preset: { id, label, promptFragment }
+- Export buildSceneSystemPrompt(selections) function
 
-5.3 Create New Scene Form (components/ide/forms/new-scene-form.tsx):
-Form with fields: name, description, artStyle, mood, timeOfDay, environment, styleNotes
+### Step 7: UI Components
+**File: components/ide/forms/new-scene-form.tsx (new)**
+- Import presets from "@/lib/config/scene-presets"
+- Form fields: name, description, artStyle (select), mood (select), timeOfDay (select), environment (select), styleNotes (textarea)
+- POST to /api/scenes, refreshCurrentProject on success
 
-5.4 Create Edit Scene Form (components/ide/forms/edit-scene-form.tsx):
-Form with fields: name, description, artStyle, mood, styleNotes, preview of primaryAsset
+**File: components/ide/forms/edit-scene-form.tsx (new)**
+- Accept scene: SceneWithAsset prop
+- Show primaryAsset preview if exists
+- PATCH to /api/scenes/[id], refreshCurrentProject on success
 
-5.5 Update Right Sidebar (components/ide/right-sidebar.tsx):
-- Add Mountain icon import
+**File: components/ide/right-sidebar.tsx**
+- Import Mountain icon from lucide-react
 - Import NewSceneForm and EditSceneForm
-- Add cases for new-scene/edit-scene in ActionContextIcon, ActionContextTitle, ActionContextContent
+- Add "new-scene" case to ActionContextIcon, ActionContextTitle, ActionContextContent
+- Add "edit-scene" case to ActionContextIcon, ActionContextTitle, ActionContextContent
 
-### Step 6: Post-Schema Changes
-Run: bun run db:generate then bun run db:push
+**File: components/ide/left-sidebar.tsx**
+- Import Mountain icon from lucide-react
+- Add scenesOpen state (useState)
+- Add handleSceneClick and handleNewScene handlers
+- Add Scenes collapsible section after Characters section
+
+**File: components/ide/views/project-view.tsx**
+- Import Mountain icon from lucide-react
+- Add Scenes grid section after Characters section
+- Add SceneCard component following CharacterCard pattern
+
+### Step 8: Database Migration
+Run: bun run db:generate && bun run db:push
 
 ## Implementation Order
-1. Schema first - Prisma schema updates
-2. Run db commands - Generate client and push schema
-3. Store types - Add Scene interfaces and ActionContext
-4. API routes - Create scenes CRUD, update project GET
-5. Presets config - Create scene-presets.ts
-6. Forms - new-scene-form.tsx, edit-scene-form.tsx
-7. Right sidebar - Wire up forms
-8. Left sidebar - Add Scenes section
-9. Project view - Add Scenes grid section
-10. Test - Verify CRUD operations work end-to-end
+1. Prisma schema (Step 1)
+2. Database commands (Step 8)
+3. Central types (Step 2)
+4. Prisma includes (Step 3)
+5. Store updates (Step 4)
+6. API routes (Step 5)
+7. Scene presets (Step 6)
+8. UI forms (Step 7 - new-scene-form, edit-scene-form)
+9. Right sidebar wiring (Step 7)
+10. Left sidebar section (Step 7)
+11. Project view grid (Step 7)
+12. End-to-end testing
 <!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-Key files:
-- prisma/schema.prisma: Add Scene model and update Asset/Project relations
-- lib/store.ts: Add Scene types and ActionContext cases
-- lib/config/scene-presets.ts: New file for style/mood/environment presets
-- components/ide/left-sidebar.tsx: Add Scenes collapsible section
-- components/ide/views/project-view.tsx: Add Scenes grid and SceneCard
-- components/ide/forms/new-scene-form.tsx: New file
-- components/ide/forms/edit-scene-form.tsx: New file
-- components/ide/right-sidebar.tsx: Wire up scene forms
-- app/api/scenes/route.ts: New CRUD route
-- app/api/scenes/[id]/route.ts: New CRUD route
-- app/api/projects/[id]/route.ts: Update to include scenes
+## Key Pattern References (from task-17 refactor)
 
-Pattern reference: Follow existing Character entity implementation for consistency
-Dependencies: None (self-contained feature)
+### API Routes Pattern
+Reference: app/api/characters/route.ts
+```typescript
+import { badRequest, jsonCreated, serverError } from "@/lib/api/response";
+import { characterWithPrimaryAsset } from "@/lib/db/includes";
+```
+
+### Types Pattern
+Reference: lib/types/index.ts
+- Re-export base types from Prisma
+- Define AssetType as string union (not enum import)
+- Extended types: `interface SceneWithAsset extends Scene { primaryAsset: Asset | null }`
+
+### Includes Pattern
+Reference: lib/db/includes.ts
+```typescript
+export const sceneWithAsset = {
+  primaryAsset: true,
+} satisfies Prisma.SceneInclude;
+```
+
+### Store Pattern
+Reference: lib/store.ts
+- Import types from "@/lib/types" (NOT define inline)
+- ActionContext is a union type with { type: string; ... } discriminator
+
+## Files to Create
+- app/api/scenes/route.ts
+- app/api/scenes/[id]/route.ts
+- lib/config/scene-presets.ts
+- components/ide/forms/new-scene-form.tsx
+- components/ide/forms/edit-scene-form.tsx
+
+## Files to Modify
+- prisma/schema.prisma (add Scene model, update enums/relations)
+- lib/types/index.ts (add Scene, SceneWithAsset, update AssetType)
+- lib/db/includes.ts (add scene patterns, update projectWithRelations)
+- lib/store.ts (add scene TabType, ActionContext cases)
+- components/ide/left-sidebar.tsx (add Scenes section)
+- components/ide/right-sidebar.tsx (wire up scene forms)
+- components/ide/views/project-view.tsx (add Scenes grid)
+
+## Dependencies
+- Requires task-17 refactor to be complete (shared utilities in place)
+- No runtime dependencies on other tasks
 <!-- SECTION:NOTES:END -->

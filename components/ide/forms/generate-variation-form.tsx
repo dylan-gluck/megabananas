@@ -135,7 +135,7 @@ export function GenerateVariationForm({
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					projectId: character.projectId,
-					filePath: `/assets/characters/${genResult.filename}`,
+					filePath: genResult.filePath,
 					systemPrompt,
 					userPrompt: prompt.trim() || null,
 					referenceAssetIds: selectedReferenceIds,

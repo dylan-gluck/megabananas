@@ -169,7 +169,7 @@ export function NewCharacterForm({ projectId }: NewCharacterFormProps) {
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					projectId,
-					filePath: `/assets/characters/${genResult.filename}`,
+					filePath: genResult.filePath,
 					systemPrompt,
 					userPrompt: prompt.trim() || null,
 					referenceAssetIds: selectedReferenceIds,

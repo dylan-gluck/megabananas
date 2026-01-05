@@ -2,8 +2,8 @@
   "metadata": {
     "version": 1,
     "root": "/Users/dylan/Workspace/vibe/megabananas",
-    "createdAt": "2026-01-05T05:49:07.653Z",
-    "updatedAt": "2026-01-05T05:49:07.653Z",
+    "createdAt": "2026-01-05T06:12:47.115Z",
+    "updatedAt": "2026-01-05T06:12:47.115Z",
     "totalFiles": 114
   },
   "tree": {
@@ -10029,6 +10029,7 @@
           "kind": "export",
           "imported": [
             "Asset",
+            "AssetType",
             "Project",
             "Character",
             "Animation",
@@ -10042,13 +10043,6 @@
             "AnimationWithCharacterAsset",
             "AnimationGenerationSettings",
             "SpriteSheetGenerationSettings"
-          ]
-        },
-        {
-          "from": "@/lib/types",
-          "kind": "export",
-          "imported": [
-            "AssetType"
           ]
         }
       ],
@@ -10080,13 +10074,6 @@
             "Asset",
             "Character",
             "Frame"
-          ]
-        },
-        {
-          "from": "@/lib/generated/prisma/client",
-          "kind": "export",
-          "imported": [
-            "AssetType"
           ]
         },
         {
