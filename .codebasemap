@@ -2,9 +2,9 @@
   "metadata": {
     "version": 1,
     "root": "/Users/dylan/Workspace/vibe/megabananas",
-    "createdAt": "2026-01-05T04:25:58.060Z",
-    "updatedAt": "2026-01-05T04:25:58.060Z",
-    "totalFiles": 108
+    "createdAt": "2026-01-05T04:40:35.654Z",
+    "updatedAt": "2026-01-05T04:40:35.654Z",
+    "totalFiles": 110
   },
   "tree": {
     "name": "megabananas",
@@ -90,6 +90,16 @@
               },
               {
                 "name": "edit-character",
+                "type": "dir",
+                "children": [
+                  {
+                    "name": "route.ts",
+                    "type": "file"
+                  }
+                ]
+              },
+              {
+                "name": "extract-frames-from-sprite",
                 "type": "dir",
                 "children": [
                   {
@@ -589,6 +599,10 @@
               {
                 "name": "character-presets.ts",
                 "type": "file"
+              },
+              {
+                "name": "sprite-extraction-prompts.ts",
+                "type": "file"
               }
             ]
           },
@@ -633,6 +647,7 @@
     "app/api/characters/[id]/route.ts",
     "app/api/characters/route.ts",
     "app/api/edit-character/route.ts",
+    "app/api/extract-frames-from-sprite/route.ts",
     "app/api/frames/[id]/route.ts",
     "app/api/gen-animation/route.ts",
     "app/api/gen-character/route.ts",
@@ -726,6 +741,7 @@
     "hooks/use-mobile.ts",
     "lib/config/animation-prompts.ts",
     "lib/config/character-presets.ts",
+    "lib/config/sprite-extraction-prompts.ts",
     "lib/gemini.ts",
     "lib/image-utils.ts",
     "lib/prisma.ts",
@@ -817,6 +833,10 @@
     },
     {
       "from": "lib/config/animation-prompts.ts",
+      "to": "lib/config/character-presets.ts"
+    },
+    {
+      "from": "lib/config/sprite-extraction-prompts.ts",
       "to": "lib/config/character-presets.ts"
     }
   ],
@@ -1201,6 +1221,101 @@
       ],
       "dependencies": [],
       "functions": [
+        {
+          "name": "POST",
+          "params": [
+            {
+              "name": "request",
+              "type": "NextRequest"
+            }
+          ],
+          "isAsync": true,
+          "isExported": true
+        }
+      ],
+      "classes": [],
+      "constants": []
+    },
+    "app/api/extract-frames-from-sprite/route.ts": {
+      "imports": [
+        {
+          "from": "node:fs",
+          "kind": "import",
+          "isDefault": true
+        },
+        {
+          "from": "node:path",
+          "kind": "import",
+          "isDefault": true
+        },
+        {
+          "from": "next/server",
+          "kind": "import",
+          "imported": [
+            "NextRequest"
+          ]
+        },
+        {
+          "from": "@/lib/config/sprite-extraction-prompts",
+          "kind": "import",
+          "imported": [
+            "buildExtractionPrompt"
+          ]
+        },
+        {
+          "from": "@/lib/gemini",
+          "kind": "import",
+          "imported": [
+            "generateImage",
+            "ImageContent"
+          ]
+        },
+        {
+          "from": "@/lib/prisma",
+          "kind": "import",
+          "imported": [
+            "prisma"
+          ]
+        }
+      ],
+      "dependencies": [],
+      "functions": [
+        {
+          "name": "loadImageAsBase64",
+          "params": [
+            {
+              "name": "filePath",
+              "type": "string"
+            }
+          ],
+          "isAsync": true,
+          "isExported": false,
+          "returnType": "Promise<string>"
+        },
+        {
+          "name": "ensureDirectoryExists",
+          "params": [
+            {
+              "name": "dirPath",
+              "type": "string"
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "returnType": "void"
+        },
+        {
+          "name": "sanitizeFilename",
+          "params": [
+            {
+              "name": "name",
+              "type": "string"
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "returnType": "string"
+        },
         {
           "name": "POST",
           "params": [
@@ -3189,6 +3304,7 @@
           "imported": [
             "useAppStore",
             "AnimationWithFrames",
+            "AnimationGenerationSettings",
             "FrameWithAsset",
             "Character",
             "Project",
@@ -3570,7 +3686,8 @@
             "Loader2",
             "Trash2",
             "Grid3X3",
-            "Eye"
+            "Eye",
+            "Film"
           ]
         },
         {
@@ -9259,6 +9376,52 @@
           "type": "CharacterPresets"
         }
       ]
+    },
+    "lib/config/sprite-extraction-prompts.ts": {
+      "imports": [
+        {
+          "from": "./character-presets",
+          "kind": "import",
+          "imported": [
+            "characterPresets"
+          ]
+        }
+      ],
+      "dependencies": [
+        "lib/config/character-presets.ts"
+      ],
+      "functions": [
+        {
+          "name": "buildExtractionPrompt",
+          "params": [
+            {
+              "name": "params",
+              "type": "BuildExtractionPromptParams"
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "returnType": "string"
+        },
+        {
+          "name": "getExtractionProgressContext",
+          "params": [
+            {
+              "name": "frameIndex",
+              "type": "number"
+            },
+            {
+              "name": "totalFrames",
+              "type": "number"
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "returnType": "string"
+        }
+      ],
+      "classes": [],
+      "constants": []
     },
     "lib/gemini.ts": {
       "imports": [

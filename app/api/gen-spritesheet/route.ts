@@ -12,12 +12,10 @@ function getLayoutConfig(frameCount: number): {
   rows: number;
 } {
   // Available ratios: 1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9
-  if (frameCount === 4)
-    return { aspectRatio: "1:1", cols: 2, rows: 2 };
+  if (frameCount === 4) return { aspectRatio: "1:1", cols: 2, rows: 2 };
   if (frameCount <= 8)
     return { aspectRatio: "21:9", cols: frameCount, rows: 1 };
-  if (frameCount <= 10)
-    return { aspectRatio: "21:9", cols: 5, rows: 2 };
+  if (frameCount <= 10) return { aspectRatio: "21:9", cols: 5, rows: 2 };
   if (frameCount <= 16) return { aspectRatio: "16:9", cols: 8, rows: 2 };
   return { aspectRatio: "3:2", cols: 8, rows: 3 }; // 24 frames: 8x3
 }

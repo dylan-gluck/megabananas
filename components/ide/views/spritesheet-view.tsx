@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, Calendar, Loader2, Trash2, Grid3X3, Eye } from "lucide-react";
+import { Download, Calendar, Loader2, Trash2, Grid3X3, Eye, Film } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
@@ -30,6 +30,7 @@ export function SpriteSheetView({ spriteSheetId }: SpriteSheetViewProps) {
   const [spriteSheet, setSpriteSheet] =
     useState<SpriteSheetWithDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreatingAnimation, setIsCreatingAnimation] = useState(false);
 
   useEffect(() => {
     fetchSpriteSheet();
@@ -112,6 +113,79 @@ export function SpriteSheetView({ spriteSheetId }: SpriteSheetViewProps) {
     ? characterPresets.angles.find((a) => a.value === anglePreset)?.label ?? anglePreset
     : null;
 
+  const handleCreateAnimation = async () => {
+    setIsCreatingAnimation(true);
+    try {
+      // 1. Create animation record
+      const res = await fetch("/api/animations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          characterId: spriteSheet.character.id,
+          name: `${spriteSheet.name} Animation`,
+          description: `Extracted from spritesheet: ${spriteSheet.name}`,
+          frameCount: generationSettings?.frameCount ?? 4,
+          generationConfig: {
+            sourceType: "spritesheet",
+            spriteSheetId: spriteSheet.id,
+            spriteSheetAssetId: spriteSheet.assetId,
+            anglePreset: generationSettings?.anglePreset,
+          },
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to create animation");
+      }
+
+      const animation = await res.json();
+
+      // 2. Start extraction job
+      const extractRes = await fetch("/api/extract-frames-from-sprite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          animationId: animation.id,
+          spriteSheetId: spriteSheet.id,
+        }),
+      });
+
+      if (!extractRes.ok) {
+        const data = await extractRes.json();
+        throw new Error(data.error || "Failed to start extraction");
+      }
+
+      // 3. Wait for job to start, then redirect
+      const reader = extractRes.body?.getReader();
+      if (reader) {
+        const decoder = new TextDecoder();
+        let started = false;
+
+        while (!started) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const text = decoder.decode(value, { stream: true });
+          if (text.includes('"type":"start"')) {
+            started = true;
+          }
+        }
+
+        // Cancel the reader - animation-view will handle the rest via polling
+        reader.cancel();
+      }
+
+      await refreshCurrentProject();
+      openTab("animation", animation.id, animation.name);
+      toast.success("Extraction started");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create animation");
+    } finally {
+      setIsCreatingAnimation(false);
+    }
+  };
+
   return (
     <ScrollArea className="h-full">
       <div className="p-6 max-w-5xl mx-auto space-y-6">
@@ -141,6 +215,19 @@ export function SpriteSheetView({ spriteSheetId }: SpriteSheetViewProps) {
               </p>
             </div>
             <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCreateAnimation}
+                disabled={isCreatingAnimation}
+              >
+                {isCreatingAnimation ? (
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                ) : (
+                  <Film className="h-4 w-4 mr-1" />
+                )}
+                Create Animation
+              </Button>
               <Button variant="outline" size="sm" onClick={handleDownload}>
                 <Download className="h-4 w-4 mr-1" />
                 Download

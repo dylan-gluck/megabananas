@@ -123,9 +123,20 @@ export interface ProjectWithRelations extends Project {
   characters: CharacterWithAssets[];
 }
 
+// Generation settings can come from character asset or spritesheet
+export interface AnimationGenerationSettings {
+  characterAssetId?: string;
+  anglePreset?: string;
+  sourceType?: "spritesheet";
+  spriteSheetId?: string;
+  spriteSheetAssetId?: string;
+}
+
 // Extended animation type with character's primary asset and variations for generation
-export interface AnimationWithCharacterAsset extends AnimationWithFrames {
+export interface AnimationWithCharacterAsset
+  extends Omit<AnimationWithFrames, "generationSettings"> {
   character: Character & { primaryAsset: Asset | null; assets: Asset[] };
+  generationSettings: AnimationGenerationSettings | null;
 }
 
 // Right sidebar context types

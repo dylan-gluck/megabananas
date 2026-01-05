@@ -42,6 +42,7 @@ import { toast } from "sonner";
 import {
   useAppStore,
   type AnimationWithFrames,
+  type AnimationGenerationSettings,
   type FrameWithAsset,
   type Character,
   type Project,
@@ -51,13 +52,10 @@ import { AssetThumbnail } from "@/components/ui/asset-thumbnail";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 
-interface AnimationWithDetails extends AnimationWithFrames {
+interface AnimationWithDetails extends Omit<AnimationWithFrames, "generationSettings"> {
   project: Project;
   character: Character & { primaryAsset: Asset | null; assets: Asset[] };
-  generationSettings: {
-    characterAssetId: string;
-    anglePreset?: string;
-  } | null;
+  generationSettings: AnimationGenerationSettings | null;
 }
 
 interface AnimationViewProps {
@@ -101,12 +99,13 @@ export function AnimationView({ animationId }: AnimationViewProps) {
     fetchAnimation();
   }, [animationId]);
 
-  // Auto-start generation when animation loads with no frames
+  // Auto-start generation when animation loads with no frames (only for non-spritesheet sources)
   useEffect(() => {
     if (
       animation &&
       animation.frames.length === 0 &&
       animation.generationSettings &&
+      animation.generationSettings.sourceType !== "spritesheet" &&
       !generationStartedRef.current &&
       generationStatus === "idle"
     ) {
@@ -114,6 +113,20 @@ export function AnimationView({ animationId }: AnimationViewProps) {
       startGeneration();
     }
   }, [animation]);
+
+  // Poll for frame updates when spritesheet extraction is running externally
+  useEffect(() => {
+    if (
+      animation?.generationSettings?.sourceType === "spritesheet" &&
+      animation.frames.length < (animation.frameCount || 4)
+    ) {
+      const pollInterval = setInterval(async () => {
+        await fetchAnimation();
+      }, 2000);
+
+      return () => clearInterval(pollInterval);
+    }
+  }, [animation?.id, animation?.frames.length, animation?.frameCount]);
 
   useEffect(() => {
     if (isPlaying && animation && animation.frames.length > 0) {
@@ -193,16 +206,29 @@ export function AnimationView({ animationId }: AnimationViewProps) {
     abortControllerRef.current = controller;
 
     try {
-      const res = await fetch("/api/gen-animation", {
+      // Determine endpoint and payload based on source type
+      const isSpritesheetSource = animation.generationSettings.sourceType === "spritesheet";
+      const endpoint = isSpritesheetSource
+        ? "/api/extract-frames-from-sprite"
+        : "/api/gen-animation";
+
+      const payload = isSpritesheetSource
+        ? {
+            animationId: animation.id,
+            spriteSheetId: animation.generationSettings.spriteSheetId,
+          }
+        : {
+            animationId: animation.id,
+            characterAssetId: animation.generationSettings.characterAssetId,
+            sequencePrompt: animation.description || "",
+            frameCount: animation.frameCount,
+            anglePreset: animation.generationSettings.anglePreset,
+          };
+
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          animationId: animation.id,
-          characterAssetId: animation.generationSettings.characterAssetId,
-          sequencePrompt: animation.description || "",
-          frameCount: animation.frameCount,
-          anglePreset: animation.generationSettings.anglePreset,
-        }),
+        body: JSON.stringify(payload),
         signal: controller.signal,
       });
 
