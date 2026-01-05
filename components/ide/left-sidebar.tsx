@@ -26,6 +26,13 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
@@ -78,6 +85,9 @@ export function LeftSidebar() {
 	const [newProjectOpen, setNewProjectOpen] = useState(false);
 	const [newProjectName, setNewProjectName] = useState("");
 	const [newProjectDesc, setNewProjectDesc] = useState("");
+	const [newProjectArtStyle, setNewProjectArtStyle] = useState("");
+	const [newProjectTheme, setNewProjectTheme] = useState("");
+	const [newProjectStyleNotes, setNewProjectStyleNotes] = useState("");
 	const [isCreatingProject, setIsCreatingProject] = useState(false);
 
 	// Fetch projects list
@@ -185,6 +195,9 @@ export function LeftSidebar() {
 				body: JSON.stringify({
 					name: newProjectName.trim(),
 					description: newProjectDesc.trim() || null,
+					artStyle: newProjectArtStyle || null,
+					theme: newProjectTheme.trim() || null,
+					styleNotes: newProjectStyleNotes.trim() || null,
 				}),
 			});
 
@@ -199,6 +212,9 @@ export function LeftSidebar() {
 			setNewProjectOpen(false);
 			setNewProjectName("");
 			setNewProjectDesc("");
+			setNewProjectArtStyle("");
+			setNewProjectTheme("");
+			setNewProjectStyleNotes("");
 			toast.success(`Project "${newProject.name}" created`);
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : "Failed to create project");
@@ -304,7 +320,52 @@ export function LeftSidebar() {
 									placeholder="A collection of characters and animations..."
 									value={newProjectDesc}
 									onChange={(e) => setNewProjectDesc(e.target.value)}
-									rows={3}
+									rows={2}
+									disabled={isCreatingProject}
+								/>
+							</div>
+							<div className="grid grid-cols-2 gap-3">
+								<div className="space-y-2">
+									<Label htmlFor="projectArtStyle">Art Style</Label>
+									<Select
+										value={newProjectArtStyle}
+										onValueChange={setNewProjectArtStyle}
+										disabled={isCreatingProject}
+									>
+										<SelectTrigger id="projectArtStyle">
+											<SelectValue placeholder="Select style" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="pixel-art">Pixel Art</SelectItem>
+											<SelectItem value="anime">Anime</SelectItem>
+											<SelectItem value="cartoon">Cartoon</SelectItem>
+											<SelectItem value="realistic">Realistic</SelectItem>
+											<SelectItem value="chibi">Chibi</SelectItem>
+											<SelectItem value="watercolor">Watercolor</SelectItem>
+											<SelectItem value="comic">Comic Book</SelectItem>
+											<SelectItem value="flat">Flat / Vector</SelectItem>
+										</SelectContent>
+									</Select>
+								</div>
+								<div className="space-y-2">
+									<Label htmlFor="projectTheme">Theme</Label>
+									<Input
+										id="projectTheme"
+										placeholder="Fantasy, Sci-Fi..."
+										value={newProjectTheme}
+										onChange={(e) => setNewProjectTheme(e.target.value)}
+										disabled={isCreatingProject}
+									/>
+								</div>
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="projectStyleNotes">Style Notes</Label>
+								<Textarea
+									id="projectStyleNotes"
+									placeholder="Additional style guidance (e.g., color palette, mood, specific techniques)..."
+									value={newProjectStyleNotes}
+									onChange={(e) => setNewProjectStyleNotes(e.target.value)}
+									rows={2}
 									disabled={isCreatingProject}
 								/>
 							</div>

@@ -61,10 +61,22 @@ BACKGROUND: Use the exact same solid background color as the reference image for
 
 export async function POST(request: NextRequest) {
   try {
-    const { characterId, characterAssetId, name, description, frameCount, anglePreset } =
-      await request.json();
+    const {
+      characterId,
+      characterAssetId,
+      name,
+      description,
+      frameCount,
+      anglePreset,
+    } = await request.json();
 
-    if (!characterId || !characterAssetId || !name || !description || !frameCount) {
+    if (
+      !characterId ||
+      !characterAssetId ||
+      !name ||
+      !description ||
+      !frameCount
+    ) {
       return NextResponse.json(
         {
           error:
