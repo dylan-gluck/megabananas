@@ -508,7 +508,7 @@ function SpriteSheetRow({
 				if (e.key === "Enter" || e.key === " ") onClick();
 			}}
 		>
-			<div className="w-12 h-12 rounded bg-muted flex-shrink-0 overflow-hidden">
+			<div className="w-24 aspect-[21/9] rounded bg-muted flex-shrink-0 overflow-hidden">
 				{thumbnailPath ? (
 					<img
 						src={thumbnailPath}
@@ -517,7 +517,7 @@ function SpriteSheetRow({
 					/>
 				) : (
 					<div className="w-full h-full flex items-center justify-center">
-						<Layers className="h-5 w-5 text-muted-foreground" />
+						<Layers className="h-6 w-6 text-muted-foreground" />
 					</div>
 				)}
 			</div>
