@@ -1,4 +1,9 @@
-import { NextResponse } from "next/server";
+import {
+  jsonSuccess,
+  notFound,
+  serverError,
+} from "@/lib/api/response";
+import { characterWithDetails, characterWithPrimaryAsset } from "@/lib/db/includes";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
@@ -10,43 +15,16 @@ export async function GET(
 
     const character = await prisma.character.findUnique({
       where: { id },
-      include: {
-        primaryAsset: true,
-        assets: {
-          where: { type: { not: "spritesheet" } },
-          orderBy: { createdAt: "desc" },
-        },
-        animations: {
-          orderBy: { updatedAt: "desc" },
-          include: {
-            frames: {
-              orderBy: { frameIndex: "asc" },
-              include: { asset: true },
-            },
-          },
-        },
-        spriteSheets: {
-          orderBy: { updatedAt: "desc" },
-          include: { asset: true },
-        },
-        project: true,
-      },
+      include: characterWithDetails,
     });
 
     if (!character) {
-      return NextResponse.json(
-        { error: "Character not found" },
-        { status: 404 },
-      );
+      return notFound("Character");
     }
 
-    return NextResponse.json(character);
+    return jsonSuccess(character);
   } catch (error) {
-    console.error("Error fetching character:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch character" },
-      { status: 500 },
-    );
+    return serverError(error, "Error fetching character");
   }
 }
 
@@ -66,19 +44,12 @@ export async function PATCH(
         ...(userPrompt !== undefined && { userPrompt }),
         ...(primaryAssetId !== undefined && { primaryAssetId }),
       },
-      include: {
-        primaryAsset: true,
-        assets: true,
-      },
+      include: characterWithPrimaryAsset,
     });
 
-    return NextResponse.json(character);
+    return jsonSuccess(character);
   } catch (error) {
-    console.error("Error updating character:", error);
-    return NextResponse.json(
-      { error: "Failed to update character" },
-      { status: 500 },
-    );
+    return serverError(error, "Error updating character");
   }
 }
 
@@ -93,12 +64,8 @@ export async function DELETE(
       where: { id },
     });
 
-    return NextResponse.json({ success: true });
+    return jsonSuccess({ success: true });
   } catch (error) {
-    console.error("Error deleting character:", error);
-    return NextResponse.json(
-      { error: "Failed to delete character" },
-      { status: 500 },
-    );
+    return serverError(error, "Error deleting character");
   }
 }

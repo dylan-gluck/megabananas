@@ -1,4 +1,9 @@
-import { NextResponse } from "next/server";
+import {
+  badRequest,
+  jsonCreated,
+  jsonSuccess,
+  serverError,
+} from "@/lib/api/response";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
@@ -15,13 +20,9 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json(projects);
+    return jsonSuccess(projects);
   } catch (error) {
-    console.error("Error fetching projects:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch projects" },
-      { status: 500 },
-    );
+    return serverError(error, "Error fetching projects");
   }
 }
 
@@ -31,10 +32,7 @@ export async function POST(request: Request) {
     const { name, description } = body;
 
     if (!name || typeof name !== "string") {
-      return NextResponse.json(
-        { error: "Project name is required" },
-        { status: 400 },
-      );
+      return badRequest("Project name is required");
     }
 
     const project = await prisma.project.create({
@@ -44,12 +42,8 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json(project, { status: 201 });
+    return jsonCreated(project);
   } catch (error) {
-    console.error("Error creating project:", error);
-    return NextResponse.json(
-      { error: "Failed to create project" },
-      { status: 500 },
-    );
+    return serverError(error, "Error creating project");
   }
 }

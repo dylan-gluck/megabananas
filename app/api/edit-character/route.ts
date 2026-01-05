@@ -1,5 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { editImage, type ImageContent, saveImageToFile } from "@/lib/gemini";
+import type { NextRequest } from "next/server";
+import { badRequest, jsonSuccess, serverError } from "@/lib/api/response";
+import { saveImageToAssets } from "@/lib/file-utils";
+import { editImage, type ImageContent } from "@/lib/gemini";
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,10 +13,7 @@ export async function POST(request: NextRequest) {
     } = await request.json();
 
     if (!sourceImage || !prompt) {
-      return NextResponse.json(
-        { error: "Source image and prompt are required" },
-        { status: 400 },
-      );
+      return badRequest("Source image and prompt are required");
     }
 
     const source: ImageContent = {
@@ -28,18 +27,14 @@ export async function POST(request: NextRequest) {
     }));
 
     const result = await editImage(source, prompt, refs, { aspectRatio });
-    const filename = saveImageToFile(result.image, "characters", "char");
+    const filePath = saveImageToAssets(result.image, "characters", "char");
 
-    return NextResponse.json({
+    return jsonSuccess({
       image: result.image,
-      filename,
+      filePath,
       text: result.text,
     });
   } catch (error) {
-    console.error("edit-character error:", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Edit failed" },
-      { status: 500 },
-    );
+    return serverError(error, "edit-character error");
   }
 }

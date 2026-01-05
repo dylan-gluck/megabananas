@@ -1,6 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import {
+  badRequest,
+  jsonSuccess,
+  serverError,
+} from "@/lib/api/response";
 import { prisma } from "@/lib/prisma";
 
 const VALID_FOLDERS = ["characters", "sprites", "reference"];
@@ -10,17 +15,14 @@ export async function GET(request: NextRequest) {
   const folder = request.nextUrl.searchParams.get("folder");
 
   if (!folder || !VALID_FOLDERS.includes(folder)) {
-    return NextResponse.json(
-      { error: "Invalid folder. Must be: characters, sprites, or reference" },
-      { status: 400 },
-    );
+    return badRequest("Invalid folder. Must be: characters, sprites, or reference");
   }
 
   try {
     const assetsPath = path.join(process.cwd(), "public", "assets", folder);
 
     if (!fs.existsSync(assetsPath)) {
-      return NextResponse.json({ assets: [] });
+      return jsonSuccess({ assets: [] });
     }
 
     const files = fs.readdirSync(assetsPath);
@@ -40,13 +42,9 @@ export async function GET(request: NextRequest) {
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
 
-    return NextResponse.json({ assets: imageFiles });
+    return jsonSuccess({ assets: imageFiles });
   } catch (error) {
-    console.error("assets error:", error);
-    return NextResponse.json(
-      { error: "Failed to list assets" },
-      { status: 500 },
-    );
+    return serverError(error, "assets error");
   }
 }
 
@@ -65,10 +63,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     if (!projectId || !filePath) {
-      return NextResponse.json(
-        { error: "projectId and filePath are required" },
-        { status: 400 },
-      );
+      return badRequest("projectId and filePath are required");
     }
 
     const asset = await prisma.asset.create({
@@ -83,12 +78,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(asset);
+    return jsonSuccess(asset);
   } catch (error) {
-    console.error("create asset error:", error);
-    return NextResponse.json(
-      { error: "Failed to create asset" },
-      { status: 500 },
-    );
+    return serverError(error, "create asset error");
   }
 }

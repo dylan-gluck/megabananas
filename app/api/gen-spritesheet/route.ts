@@ -1,9 +1,16 @@
-import fs from "node:fs";
 import path from "node:path";
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { badRequest, jsonSuccess, notFound, serverError } from "@/lib/api/response";
 import { characterPresets } from "@/lib/config/character-presets";
+import {
+  ensureDirectoryExists,
+  loadImageAsBase64,
+  saveBase64Image,
+  sanitizeFilename,
+} from "@/lib/file-utils";
 import { editImage, type ImageContent } from "@/lib/gemini";
 import { prisma } from "@/lib/prisma";
+import { spriteSheetWithAsset } from "@/lib/db/includes";
 
 // Layout configuration for different frame counts
 function getLayoutConfig(frameCount: number): {
@@ -73,12 +80,8 @@ export async function POST(request: NextRequest) {
       !description ||
       !frameCount
     ) {
-      return NextResponse.json(
-        {
-          error:
-            "characterId, characterAssetId, name, description, and frameCount are required",
-        },
-        { status: 400 },
+      return badRequest(
+        "characterId, characterAssetId, name, description, and frameCount are required"
       );
     }
 
@@ -87,30 +90,18 @@ export async function POST(request: NextRequest) {
       include: { project: true },
     });
     if (!character) {
-      return NextResponse.json(
-        { error: "Character not found" },
-        { status: 404 },
-      );
+      return notFound("Character");
     }
 
     const characterAsset = await prisma.asset.findUnique({
       where: { id: characterAssetId },
     });
     if (!characterAsset) {
-      return NextResponse.json(
-        { error: "Character asset not found" },
-        { status: 404 },
-      );
+      return notFound("Character asset");
     }
 
     // Read character image as base64
-    const imagePath = path.join(
-      process.cwd(),
-      "public",
-      characterAsset.filePath,
-    );
-    const imageBuffer = fs.readFileSync(imagePath);
-    const base64Image = imageBuffer.toString("base64");
+    const base64Image = await loadImageAsBase64(characterAsset.filePath);
 
     const source: ImageContent = {
       mimeType: "image/png",
@@ -150,16 +141,14 @@ export async function POST(request: NextRequest) {
       "spritesheets",
     );
 
-    fs.mkdirSync(spritesheetsDir, { recursive: true });
+    ensureDirectoryExists(spritesheetsDir);
 
     const timestamp = Date.now();
-    const safeName = name.replace(/\s+/g, "-").toLowerCase();
+    const safeName = sanitizeFilename(name);
     const filename = `${safeName}_${timestamp}.png`;
     const filePath = `/assets/${projectId}/spritesheets/${filename}`;
-    const fullPath = path.join(spritesheetsDir, filename);
 
-    const buffer = Buffer.from(result.image, "base64");
-    fs.writeFileSync(fullPath, buffer);
+    saveBase64Image(result.image, spritesheetsDir, filename);
 
     // Create Asset record
     const asset = await prisma.asset.create({
@@ -199,27 +188,15 @@ export async function POST(request: NextRequest) {
           rows,
         },
       },
-      include: {
-        asset: true,
-        character: true,
-      },
+      include: spriteSheetWithAsset,
     });
 
-    return NextResponse.json({
+    return jsonSuccess({
       spriteSheet,
       spriteGrid: result.image,
       text: result.text,
     });
   } catch (error) {
-    console.error("gen-spritesheet error:", error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Spritesheet generation failed",
-      },
-      { status: 500 },
-    );
+    return serverError(error, "gen-spritesheet error");
   }
 }

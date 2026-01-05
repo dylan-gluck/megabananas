@@ -1,4 +1,10 @@
-import { NextResponse } from "next/server";
+import {
+  badRequest,
+  jsonCreated,
+  notFound,
+  serverError,
+} from "@/lib/api/response";
+import { spriteSheetWithAsset } from "@/lib/db/includes";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
@@ -8,24 +14,15 @@ export async function POST(request: Request) {
       body;
 
     if (!name || typeof name !== "string") {
-      return NextResponse.json(
-        { error: "Spritesheet name is required" },
-        { status: 400 },
-      );
+      return badRequest("Spritesheet name is required");
     }
 
     if (!characterId || typeof characterId !== "string") {
-      return NextResponse.json(
-        { error: "Character ID is required" },
-        { status: 400 },
-      );
+      return badRequest("Character ID is required");
     }
 
     if (!assetId || typeof assetId !== "string") {
-      return NextResponse.json(
-        { error: "Asset ID is required" },
-        { status: 400 },
-      );
+      return badRequest("Asset ID is required");
     }
 
     const character = await prisma.character.findUnique({
@@ -34,10 +31,7 @@ export async function POST(request: Request) {
     });
 
     if (!character) {
-      return NextResponse.json(
-        { error: "Character not found" },
-        { status: 404 },
-      );
+      return notFound("Character");
     }
 
     const spriteSheet = await prisma.spriteSheet.create({
@@ -49,18 +43,11 @@ export async function POST(request: Request) {
         assetId,
         generationSettings: generationSettings || null,
       },
-      include: {
-        asset: true,
-        character: true,
-      },
+      include: spriteSheetWithAsset,
     });
 
-    return NextResponse.json(spriteSheet, { status: 201 });
+    return jsonCreated(spriteSheet);
   } catch (error) {
-    console.error("Error creating spritesheet:", error);
-    return NextResponse.json(
-      { error: "Failed to create spritesheet" },
-      { status: 500 },
-    );
+    return serverError(error, "Error creating spritesheet");
   }
 }

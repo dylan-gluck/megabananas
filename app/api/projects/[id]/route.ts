@@ -1,4 +1,9 @@
-import { NextResponse } from "next/server";
+import {
+  jsonSuccess,
+  notFound,
+  serverError,
+} from "@/lib/api/response";
+import { projectWithRelations } from "@/lib/db/includes";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
@@ -10,45 +15,16 @@ export async function GET(
 
     const project = await prisma.project.findUnique({
       where: { id },
-      include: {
-        characters: {
-          orderBy: { updatedAt: "desc" },
-          include: {
-            primaryAsset: true,
-            assets: true,
-            animations: {
-              orderBy: { updatedAt: "desc" },
-              include: {
-                character: true,
-                frames: {
-                  orderBy: { frameIndex: "asc" },
-                  include: { asset: true },
-                },
-              },
-            },
-            spriteSheets: {
-              orderBy: { updatedAt: "desc" },
-              include: {
-                asset: true,
-                character: true,
-              },
-            },
-          },
-        },
-      },
+      include: projectWithRelations,
     });
 
     if (!project) {
-      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+      return notFound("Project");
     }
 
-    return NextResponse.json(project);
+    return jsonSuccess(project);
   } catch (error) {
-    console.error("Error fetching project:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch project" },
-      { status: 500 },
-    );
+    return serverError(error, "Error fetching project");
   }
 }
 
@@ -70,13 +46,9 @@ export async function PATCH(
       },
     });
 
-    return NextResponse.json(project);
+    return jsonSuccess(project);
   } catch (error) {
-    console.error("Error updating project:", error);
-    return NextResponse.json(
-      { error: "Failed to update project" },
-      { status: 500 },
-    );
+    return serverError(error, "Error updating project");
   }
 }
 
@@ -91,12 +63,8 @@ export async function DELETE(
       where: { id },
     });
 
-    return NextResponse.json({ success: true });
+    return jsonSuccess({ success: true });
   } catch (error) {
-    console.error("Error deleting project:", error);
-    return NextResponse.json(
-      { error: "Failed to delete project" },
-      { status: 500 },
-    );
+    return serverError(error, "Error deleting project");
   }
 }

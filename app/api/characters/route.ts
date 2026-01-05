@@ -1,4 +1,9 @@
-import { NextResponse } from "next/server";
+import {
+  badRequest,
+  jsonCreated,
+  serverError,
+} from "@/lib/api/response";
+import { characterWithPrimaryAsset } from "@/lib/db/includes";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
@@ -7,17 +12,11 @@ export async function POST(request: Request) {
     const { name, projectId, userPrompt, primaryAssetId } = body;
 
     if (!name || typeof name !== "string") {
-      return NextResponse.json(
-        { error: "Character name is required" },
-        { status: 400 },
-      );
+      return badRequest("Character name is required");
     }
 
     if (!projectId || typeof projectId !== "string") {
-      return NextResponse.json(
-        { error: "Project ID is required" },
-        { status: 400 },
-      );
+      return badRequest("Project ID is required");
     }
 
     const character = await prisma.character.create({
@@ -27,18 +26,11 @@ export async function POST(request: Request) {
         userPrompt: userPrompt || null,
         primaryAssetId: primaryAssetId || null,
       },
-      include: {
-        primaryAsset: true,
-        assets: true,
-      },
+      include: characterWithPrimaryAsset,
     });
 
-    return NextResponse.json(character, { status: 201 });
+    return jsonCreated(character);
   } catch (error) {
-    console.error("Error creating character:", error);
-    return NextResponse.json(
-      { error: "Failed to create character" },
-      { status: 500 },
-    );
+    return serverError(error, "Error creating character");
   }
 }

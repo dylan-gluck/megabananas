@@ -1,4 +1,9 @@
-import { NextResponse } from "next/server";
+import {
+  jsonSuccess,
+  notFound,
+  serverError,
+} from "@/lib/api/response";
+import { animationWithCharacterAssets, animationWithFrames } from "@/lib/db/includes";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
@@ -10,35 +15,16 @@ export async function GET(
 
     const animation = await prisma.animation.findUnique({
       where: { id },
-      include: {
-        character: {
-          include: {
-            primaryAsset: true,
-            assets: true,
-          },
-        },
-        frames: {
-          orderBy: { frameIndex: "asc" },
-          include: { asset: true },
-        },
-        project: true,
-      },
+      include: animationWithCharacterAssets,
     });
 
     if (!animation) {
-      return NextResponse.json(
-        { error: "Animation not found" },
-        { status: 404 },
-      );
+      return notFound("Animation");
     }
 
-    return NextResponse.json(animation);
+    return jsonSuccess(animation);
   } catch (error) {
-    console.error("Error fetching animation:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch animation" },
-      { status: 500 },
-    );
+    return serverError(error, "Error fetching animation");
   }
 }
 
@@ -58,22 +44,12 @@ export async function PATCH(
         ...(description !== undefined && { description }),
         ...(frameCount !== undefined && { frameCount }),
       },
-      include: {
-        character: true,
-        frames: {
-          orderBy: { frameIndex: "asc" },
-          include: { asset: true },
-        },
-      },
+      include: animationWithFrames,
     });
 
-    return NextResponse.json(animation);
+    return jsonSuccess(animation);
   } catch (error) {
-    console.error("Error updating animation:", error);
-    return NextResponse.json(
-      { error: "Failed to update animation" },
-      { status: 500 },
-    );
+    return serverError(error, "Error updating animation");
   }
 }
 
@@ -88,12 +64,8 @@ export async function DELETE(
       where: { id },
     });
 
-    return NextResponse.json({ success: true });
+    return jsonSuccess({ success: true });
   } catch (error) {
-    console.error("Error deleting animation:", error);
-    return NextResponse.json(
-      { error: "Failed to delete animation" },
-      { status: 500 },
-    );
+    return serverError(error, "Error deleting animation");
   }
 }

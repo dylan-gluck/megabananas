@@ -1,5 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { editImage, type ImageContent, saveImageToFile } from "@/lib/gemini";
+import type { NextRequest } from "next/server";
+import { badRequest, jsonSuccess, serverError } from "@/lib/api/response";
+import { saveImageToAssets } from "@/lib/file-utils";
+import { editImage, type ImageContent } from "@/lib/gemini";
 
 type Sequence = {
   name: string;
@@ -12,10 +14,7 @@ export async function POST(request: NextRequest) {
     const { characterImage, sequences } = await request.json();
 
     if (!characterImage || !sequences?.length) {
-      return NextResponse.json(
-        { error: "Character image and sequences are required" },
-        { status: 400 },
-      );
+      return badRequest("Character image and sequences are required");
     }
 
     const source: ImageContent = {
@@ -50,21 +49,14 @@ Requirements:
       aspectRatio: "1:1",
       resolution: "2K",
     });
-    const filename = saveImageToFile(result.image, "sprites", "sprite");
+    const filePath = saveImageToAssets(result.image, "sprites", "sprite");
 
-    return NextResponse.json({
+    return jsonSuccess({
       spriteGrid: result.image,
-      filename,
+      filePath,
       text: result.text,
     });
   } catch (error) {
-    console.error("gen-sprite error:", error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Sprite generation failed",
-      },
-      { status: 500 },
-    );
+    return serverError(error, "gen-sprite error");
   }
 }

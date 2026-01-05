@@ -1,5 +1,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import type {
+  Asset,
+  AnimationWithFrames,
+  AnimationWithCharacterAsset,
+  CharacterWithAssets,
+  ProjectWithRelations,
+} from "@/lib/types";
 
 // Tab types for the workspace
 export type TabType =
@@ -15,118 +22,6 @@ export interface Tab {
   type: TabType;
   entityId: string;
   label: string;
-}
-
-// Asset type enum
-export type AssetType = "reference" | "character" | "frame" | "spritesheet";
-
-// Base entity types (matching Prisma schema)
-export interface Asset {
-  id: string;
-  projectId: string;
-  filePath: string;
-  type: AssetType;
-  createdAt: Date;
-  systemPrompt: string | null;
-  userPrompt: string | null;
-  referenceAssetIds: string[];
-  generationSettings: unknown;
-  characterId: string | null;
-}
-
-export interface Project {
-  id: string;
-  name: string;
-  description: string | null;
-  thumbnailId: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  // Art style metadata
-  artStyle: string | null;
-  theme: string | null;
-  colorPalette: string[];
-  styleNotes: string | null;
-}
-
-export interface Character {
-  id: string;
-  projectId: string;
-  name: string;
-  userPrompt: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  primaryAssetId: string | null;
-}
-
-export interface Animation {
-  id: string;
-  projectId: string;
-  characterId: string;
-  name: string;
-  description: string | null;
-  frameCount: number;
-  createdAt: Date;
-  updatedAt: Date;
-  generationSettings: {
-    characterAssetId: string;
-    anglePreset?: string;
-  } | null;
-}
-
-export interface Frame {
-  id: string;
-  animationId: string;
-  assetId: string;
-  frameIndex: number;
-  createdAt: Date;
-}
-
-export interface SpriteSheet {
-  id: string;
-  projectId: string;
-  characterId: string;
-  name: string;
-  description: string | null;
-  assetId: string;
-  createdAt: Date;
-  updatedAt: Date;
-  generationSettings: {
-    characterAssetId: string;
-    anglePreset?: string;
-    frameCount: number;
-    cols: number;
-  } | null;
-}
-
-// Extended types with relations
-export interface FrameWithAsset extends Frame {
-  asset: Asset;
-}
-
-export interface AnimationWithFrames extends Animation {
-  character: Character;
-  frames: FrameWithAsset[];
-}
-
-export interface CharacterWithAssets extends Character {
-  primaryAsset: Asset | null;
-  assets: Asset[];
-  animations: AnimationWithFrames[];
-  spriteSheets: SpriteSheetWithAsset[];
-}
-
-export interface SpriteSheetWithAsset extends SpriteSheet {
-  asset: Asset;
-  character: Character;
-}
-
-export interface ProjectWithRelations extends Project {
-  characters: CharacterWithAssets[];
-}
-
-// Extended animation type with character's primary asset and variations for generation
-export interface AnimationWithCharacterAsset extends AnimationWithFrames {
-  character: Character & { primaryAsset: Asset | null; assets: Asset[] };
 }
 
 // Right sidebar context types
@@ -305,3 +200,22 @@ export const useAppStore = create<AppState>()(
     },
   ),
 );
+
+// Re-export types from central types module for backwards compatibility
+export type {
+  Asset,
+  Project,
+  Character,
+  Animation,
+  Frame,
+  SpriteSheet,
+  FrameWithAsset,
+  AnimationWithFrames,
+  CharacterWithAssets,
+  SpriteSheetWithAsset,
+  ProjectWithRelations,
+  AnimationWithCharacterAsset,
+  AnimationGenerationSettings,
+  SpriteSheetGenerationSettings,
+} from "@/lib/types";
+export { AssetType } from "@/lib/types";

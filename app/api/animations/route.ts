@@ -1,4 +1,10 @@
-import { NextResponse } from "next/server";
+import {
+  badRequest,
+  jsonCreated,
+  notFound,
+  serverError,
+} from "@/lib/api/response";
+import { animationWithFrames } from "@/lib/db/includes";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
@@ -8,17 +14,11 @@ export async function POST(request: Request) {
       body;
 
     if (!name || typeof name !== "string") {
-      return NextResponse.json(
-        { error: "Animation name is required" },
-        { status: 400 },
-      );
+      return badRequest("Animation name is required");
     }
 
     if (!characterId || typeof characterId !== "string") {
-      return NextResponse.json(
-        { error: "Character ID is required" },
-        { status: 400 },
-      );
+      return badRequest("Character ID is required");
     }
 
     // Get the character to find its projectId
@@ -28,10 +28,7 @@ export async function POST(request: Request) {
     });
 
     if (!character) {
-      return NextResponse.json(
-        { error: "Character not found" },
-        { status: 404 },
-      );
+      return notFound("Character");
     }
 
     const animation = await prisma.animation.create({
@@ -43,21 +40,11 @@ export async function POST(request: Request) {
         frameCount: frameCount || 4,
         generationSettings: generationConfig || null,
       },
-      include: {
-        character: true,
-        frames: {
-          orderBy: { frameIndex: "asc" },
-          include: { asset: true },
-        },
-      },
+      include: animationWithFrames,
     });
 
-    return NextResponse.json(animation, { status: 201 });
+    return jsonCreated(animation);
   } catch (error) {
-    console.error("Error creating animation:", error);
-    return NextResponse.json(
-      { error: "Failed to create animation" },
-      { status: 500 },
-    );
+    return serverError(error, "Error creating animation");
   }
 }

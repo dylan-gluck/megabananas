@@ -1,4 +1,9 @@
-import { NextResponse } from "next/server";
+import {
+  jsonSuccess,
+  notFound,
+  serverError,
+} from "@/lib/api/response";
+import { characterWithPrimaryAsset, spriteSheetWithAsset } from "@/lib/db/includes";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
@@ -12,10 +17,7 @@ export async function GET(
       where: { id },
       include: {
         character: {
-          include: {
-            primaryAsset: true,
-            assets: true,
-          },
+          include: characterWithPrimaryAsset,
         },
         asset: true,
         project: true,
@@ -23,19 +25,12 @@ export async function GET(
     });
 
     if (!spriteSheet) {
-      return NextResponse.json(
-        { error: "Spritesheet not found" },
-        { status: 404 },
-      );
+      return notFound("Spritesheet");
     }
 
-    return NextResponse.json(spriteSheet);
+    return jsonSuccess(spriteSheet);
   } catch (error) {
-    console.error("Error fetching spritesheet:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch spritesheet" },
-      { status: 500 },
-    );
+    return serverError(error, "Error fetching spritesheet");
   }
 }
 
@@ -54,19 +49,12 @@ export async function PATCH(
         ...(name && { name }),
         ...(description !== undefined && { description }),
       },
-      include: {
-        asset: true,
-        character: true,
-      },
+      include: spriteSheetWithAsset,
     });
 
-    return NextResponse.json(spriteSheet);
+    return jsonSuccess(spriteSheet);
   } catch (error) {
-    console.error("Error updating spritesheet:", error);
-    return NextResponse.json(
-      { error: "Failed to update spritesheet" },
-      { status: 500 },
-    );
+    return serverError(error, "Error updating spritesheet");
   }
 }
 
@@ -83,20 +71,13 @@ export async function DELETE(
     });
 
     if (!spriteSheet) {
-      return NextResponse.json(
-        { error: "Spritesheet not found" },
-        { status: 404 },
-      );
+      return notFound("Spritesheet");
     }
 
     await prisma.spriteSheet.delete({ where: { id } });
 
-    return NextResponse.json({ success: true });
+    return jsonSuccess({ success: true });
   } catch (error) {
-    console.error("Error deleting spritesheet:", error);
-    return NextResponse.json(
-      { error: "Failed to delete spritesheet" },
-      { status: 500 },
-    );
+    return serverError(error, "Error deleting spritesheet");
   }
 }

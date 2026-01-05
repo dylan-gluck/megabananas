@@ -1,50 +1,18 @@
-import fs from "node:fs";
 import path from "node:path";
 import type { NextRequest } from "next/server";
 import { buildFramePrompt } from "@/lib/config/animation-prompts";
+import {
+  ensureDirectoryExists,
+  loadImageAsBase64,
+  sanitizeFilename,
+  saveBase64Image,
+} from "@/lib/file-utils";
 import { generateImage, type ImageContent } from "@/lib/gemini";
 import { prisma } from "@/lib/prisma";
-
-interface PerFrameInstruction {
-  index: number;
-  prompt: string;
-}
-
-interface GenerateAnimationRequest {
-  animationId: string;
-  characterAssetId: string;
-  sequencePrompt: string;
-  frameCount: number;
-  anglePreset?: string;
-  perFrameInstructions?: PerFrameInstruction[];
-}
-
-type SSEEvent =
-  | { type: "start"; totalFrames: number }
-  | { type: "frame_start"; index: number }
-  | { type: "frame_complete"; index: number; assetId: string; filePath: string }
-  | { type: "frame_error"; index: number; error: string }
-  | { type: "complete"; totalGenerated: number }
-  | { type: "error"; message: string };
-
-async function loadImageAsBase64(filePath: string): Promise<string> {
-  const fullPath = path.join(process.cwd(), "public", filePath);
-  const buffer = fs.readFileSync(fullPath);
-  return buffer.toString("base64");
-}
-
-function ensureDirectoryExists(dirPath: string): void {
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
-  }
-}
-
-function sanitizeFilename(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
+import type {
+  GenerateAnimationRequest,
+  SSEEvent,
+} from "@/lib/types/api";
 
 export async function POST(request: NextRequest) {
   try {
@@ -183,9 +151,7 @@ export async function POST(request: NextRequest) {
             // Save to filesystem
             const timestamp = Date.now();
             const filename = `${characterSlug}_${animationSlug}_${frameIndex}_${timestamp}.png`;
-            const fullPath = path.join(frameDir, filename);
-            const buffer = Buffer.from(result.image, "base64");
-            fs.writeFileSync(fullPath, buffer);
+            saveBase64Image(result.image, frameDir, filename);
 
             const filePath = `/assets/${animation.project.id}/frames/${animationSlug}/${filename}`;
 

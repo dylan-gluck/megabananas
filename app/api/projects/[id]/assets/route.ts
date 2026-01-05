@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import type { AssetType } from "@/lib/generated/prisma/enums";
+import { jsonSuccess, serverError } from "@/lib/api/response";
+import type { AssetType } from "@/lib/types";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
@@ -19,12 +19,8 @@ export async function GET(
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ assets });
+    return jsonSuccess({ assets });
   } catch (error) {
-    console.error("Error fetching project assets:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch assets" },
-      { status: 500 },
-    );
+    return serverError(error, "Error fetching project assets");
   }
 }

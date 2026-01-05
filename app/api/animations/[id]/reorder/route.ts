@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { badRequest, jsonSuccess, serverError } from "@/lib/api/response";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(
@@ -10,10 +10,7 @@ export async function POST(
     const { frameIds } = await request.json();
 
     if (!Array.isArray(frameIds)) {
-      return NextResponse.json(
-        { error: "frameIds must be an array" },
-        { status: 400 },
-      );
+      return badRequest("frameIds must be an array");
     }
 
     // Update each frame's index in a transaction, scoped to this animation
@@ -26,12 +23,8 @@ export async function POST(
       ),
     );
 
-    return NextResponse.json({ success: true });
+    return jsonSuccess({ success: true });
   } catch (error) {
-    console.error("Error reordering frames:", error);
-    return NextResponse.json(
-      { error: "Failed to reorder frames" },
-      { status: 500 },
-    );
+    return serverError(error, "Error reordering frames");
   }
 }

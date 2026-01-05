@@ -1,9 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server";
-import {
-  generateImage,
-  type ImageContent,
-  saveImageToFile,
-} from "@/lib/gemini";
+import type { NextRequest } from "next/server";
+import { badRequest, jsonSuccess, serverError } from "@/lib/api/response";
+import { saveImageToAssets } from "@/lib/file-utils";
+import { generateImage, type ImageContent } from "@/lib/gemini";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,10 +13,7 @@ export async function POST(request: NextRequest) {
     } = await request.json();
 
     if (!prompt) {
-      return NextResponse.json(
-        { error: "Prompt is required" },
-        { status: 400 },
-      );
+      return badRequest("Prompt is required");
     }
 
     // Combine system prompt with user prompt
@@ -32,18 +27,14 @@ export async function POST(request: NextRequest) {
     }));
 
     const result = await generateImage(fullPrompt, refs, { aspectRatio });
-    const filename = saveImageToFile(result.image, "characters", "char");
+    const filePath = saveImageToAssets(result.image, "characters", "char");
 
-    return NextResponse.json({
+    return jsonSuccess({
       image: result.image,
-      filename,
+      filePath,
       text: result.text,
     });
   } catch (error) {
-    console.error("gen-character error:", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Generation failed" },
-      { status: 500 },
-    );
+    return serverError(error, "gen-character error");
   }
 }

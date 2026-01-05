@@ -1,5 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
 import { GoogleGenAI } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -94,25 +92,4 @@ export async function editImage(
   }
 
   return { image, text: text || undefined };
-}
-
-export function saveImageToFile(
-  base64Data: string,
-  folder: string,
-  prefix: string,
-): string {
-  const timestamp = Date.now();
-  const filename = `${prefix}_${timestamp}.png`;
-  const filepath = path.join(
-    process.cwd(),
-    "public",
-    "assets",
-    folder,
-    filename,
-  );
-
-  const buffer = Buffer.from(base64Data, "base64");
-  fs.writeFileSync(filepath, buffer);
-
-  return filename;
 }

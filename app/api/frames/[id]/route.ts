@@ -1,4 +1,8 @@
-import { NextResponse } from "next/server";
+import {
+  jsonSuccess,
+  notFound,
+  serverError,
+} from "@/lib/api/response";
 import { prisma } from "@/lib/prisma";
 
 export async function DELETE(
@@ -15,7 +19,7 @@ export async function DELETE(
     });
 
     if (!frame) {
-      return NextResponse.json({ error: "Frame not found" }, { status: 404 });
+      return notFound("Frame");
     }
 
     // Delete the frame
@@ -44,12 +48,8 @@ export async function DELETE(
       data: { frameCount: remainingFrames },
     });
 
-    return NextResponse.json({ success: true });
+    return jsonSuccess({ success: true });
   } catch (error) {
-    console.error("Error deleting frame:", error);
-    return NextResponse.json(
-      { error: "Failed to delete frame" },
-      { status: 500 },
-    );
+    return serverError(error, "Error deleting frame");
   }
 }

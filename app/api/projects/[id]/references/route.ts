@@ -1,6 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import {
+  badRequest,
+  jsonSuccess,
+  notFound,
+  serverError,
+} from "@/lib/api/response";
+import { ensureDirectoryExists, saveBase64Image } from "@/lib/file-utils";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(
@@ -13,10 +20,7 @@ export async function POST(
     const { image, filename: originalFilename } = body;
 
     if (!image) {
-      return NextResponse.json(
-        { error: "image (base64) is required" },
-        { status: 400 },
-      );
+      return badRequest("image (base64) is required");
     }
 
     // Verify project exists
@@ -24,7 +28,7 @@ export async function POST(
       where: { id: projectId },
     });
     if (!project) {
-      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+      return notFound("Project");
     }
 
     // Create references directory
@@ -35,18 +39,16 @@ export async function POST(
       projectId,
       "references",
     );
-    fs.mkdirSync(refsDir, { recursive: true });
+    ensureDirectoryExists(refsDir);
 
     // Generate filename
     const timestamp = Date.now();
     const ext = originalFilename?.split(".").pop() || "png";
     const filename = `ref_${timestamp}.${ext}`;
-    const filepath = path.join(refsDir, filename);
 
     // Decode and save
     const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
-    const buffer = Buffer.from(base64Data, "base64");
-    fs.writeFileSync(filepath, buffer);
+    saveBase64Image(base64Data, refsDir, filename);
 
     const filePath = `/assets/${projectId}/references/${filename}`;
 
@@ -59,13 +61,9 @@ export async function POST(
       },
     });
 
-    return NextResponse.json(asset);
+    return jsonSuccess(asset);
   } catch (error) {
-    console.error("upload reference error:", error);
-    return NextResponse.json(
-      { error: "Failed to upload reference" },
-      { status: 500 },
-    );
+    return serverError(error, "upload reference error");
   }
 }
 
@@ -79,10 +77,7 @@ export async function DELETE(
     const assetId = searchParams.get("assetId");
 
     if (!assetId) {
-      return NextResponse.json(
-        { error: "assetId query param required" },
-        { status: 400 },
-      );
+      return badRequest("assetId query param required");
     }
 
     // Verify asset exists and belongs to project
@@ -91,7 +86,7 @@ export async function DELETE(
     });
 
     if (!asset) {
-      return NextResponse.json({ error: "Asset not found" }, { status: 404 });
+      return notFound("Asset");
     }
 
     // Delete file from disk
@@ -103,12 +98,8 @@ export async function DELETE(
     // Delete from database
     await prisma.asset.delete({ where: { id: assetId } });
 
-    return NextResponse.json({ success: true });
+    return jsonSuccess({ success: true });
   } catch (error) {
-    console.error("delete reference error:", error);
-    return NextResponse.json(
-      { error: "Failed to delete reference" },
-      { status: 500 },
-    );
+    return serverError(error, "delete reference error");
   }
 }

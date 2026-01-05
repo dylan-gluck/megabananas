@@ -1,9 +1,14 @@
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import {
+  jsonSuccess,
+  notFound,
+  serverError,
+} from "@/lib/api/response";
 import { prisma } from "@/lib/prisma";
 
 // GET - Fetch single asset by ID
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
@@ -14,22 +19,18 @@ export async function GET(
     });
 
     if (!asset) {
-      return NextResponse.json({ error: "Asset not found" }, { status: 404 });
+      return notFound("Asset");
     }
 
-    return NextResponse.json(asset);
+    return jsonSuccess(asset);
   } catch (error) {
-    console.error("fetch asset error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch asset" },
-      { status: 500 },
-    );
+    return serverError(error, "fetch asset error");
   }
 }
 
 // DELETE - Delete asset by ID
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
@@ -39,12 +40,8 @@ export async function DELETE(
       where: { id },
     });
 
-    return NextResponse.json({ success: true });
+    return jsonSuccess({ success: true });
   } catch (error) {
-    console.error("delete asset error:", error);
-    return NextResponse.json(
-      { error: "Failed to delete asset" },
-      { status: 500 },
-    );
+    return serverError(error, "delete asset error");
   }
 }
