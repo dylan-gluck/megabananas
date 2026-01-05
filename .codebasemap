@@ -2,9 +2,9 @@
   "metadata": {
     "version": 1,
     "root": "/Users/dylan/Workspace/vibe/megabananas",
-    "createdAt": "2026-01-05T01:08:19.871Z",
-    "updatedAt": "2026-01-05T01:08:19.871Z",
-    "totalFiles": 107
+    "createdAt": "2026-01-05T01:55:27.042Z",
+    "updatedAt": "2026-01-05T01:55:27.042Z",
+    "totalFiles": 108
   },
   "tree": {
     "name": "megabananas",
@@ -597,6 +597,10 @@
             "type": "file"
           },
           {
+            "name": "image-utils.ts",
+            "type": "file"
+          },
+          {
             "name": "prisma.ts",
             "type": "file"
           },
@@ -723,6 +727,7 @@
     "lib/config/animation-prompts.ts",
     "lib/config/character-presets.ts",
     "lib/gemini.ts",
+    "lib/image-utils.ts",
     "lib/prisma.ts",
     "lib/store.ts",
     "lib/utils.ts",
@@ -1463,6 +1468,42 @@
       ],
       "dependencies": [],
       "functions": [
+        {
+          "name": "getLayoutConfig",
+          "params": [
+            {
+              "name": "frameCount",
+              "type": "number"
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "returnType": "{ aspectRatio: string; cols: number; rows: number }"
+        },
+        {
+          "name": "buildSpritesheetPrompt",
+          "params": [
+            {
+              "name": "animationName",
+              "type": "string"
+            },
+            {
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "name": "frameCount",
+              "type": "number"
+            },
+            {
+              "name": "angleFragment",
+              "type": "string"
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "returnType": "string"
+        },
         {
           "name": "POST",
           "params": [
@@ -9302,6 +9343,82 @@
           "isExported": false
         }
       ]
+    },
+    "lib/image-utils.ts": {
+      "imports": [
+        {
+          "from": "magickwand.js",
+          "kind": "import",
+          "isDefault": true
+        }
+      ],
+      "dependencies": [],
+      "functions": [
+        {
+          "name": "getMagick",
+          "params": [],
+          "isAsync": true,
+          "isExported": false
+        },
+        {
+          "name": "bufferToArrayBuffer",
+          "params": [
+            {
+              "name": "buffer",
+              "type": "Buffer"
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "returnType": "ArrayBuffer"
+        },
+        {
+          "name": "removeBackground",
+          "params": [
+            {
+              "name": "inputBuffer",
+              "type": "Buffer"
+            },
+            {
+              "name": "options",
+              "type": "RemoveBackgroundOptions"
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "returnType": "Promise<Buffer>"
+        },
+        {
+          "name": "splitSpritesheet",
+          "params": [
+            {
+              "name": "inputBuffer",
+              "type": "Buffer"
+            },
+            {
+              "name": "options",
+              "type": "SplitSpritesheetOptions"
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "returnType": "Promise<Buffer[]>"
+        },
+        {
+          "name": "getImageDimensions",
+          "params": [
+            {
+              "name": "inputBuffer",
+              "type": "Buffer"
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "returnType": "Promise<{ width: number; height: number }>"
+        }
+      ],
+      "classes": [],
+      "constants": []
     },
     "lib/prisma.ts": {
       "imports": [
