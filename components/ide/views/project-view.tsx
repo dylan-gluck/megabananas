@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import {
 	Sparkles,
-	Film,
 	Plus,
 	Calendar,
 	MoreVertical,
@@ -29,7 +28,6 @@ import {
 	useAppStore,
 	type ProjectWithRelations,
 	type CharacterWithAssets,
-	type AnimationWithFrames,
 	type Asset,
 } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -171,7 +169,7 @@ export function ProjectView({ projectId }: ProjectViewProps) {
 							})}
 						</span>
 						<span>{project.characters.length} characters</span>
-						<span>{project.animations.length} animations</span>
+						<span>{project.characters.reduce((sum, c) => sum + c.animations.length, 0)} animations</span>
 					</div>
 				</div>
 
@@ -345,69 +343,6 @@ export function ProjectView({ projectId }: ProjectViewProps) {
 						</div>
 					)}
 				</section>
-
-				{/* Animations Grid */}
-				<section className="space-y-4">
-					<div className="flex items-center justify-between">
-						<h2 className="text-lg font-semibold flex items-center gap-2">
-							<Film className="h-5 w-5 text-primary" />
-							Animations
-						</h2>
-						<Button
-							size="sm"
-							onClick={() =>
-								setActionContext({ type: "new-animation", projectId })
-							}
-							disabled={project.characters.length === 0}
-						>
-							<Plus className="h-4 w-4 mr-1" />
-							New Animation
-						</Button>
-					</div>
-
-					{project.animations.length === 0 ? (
-						<EmptySection
-							icon={Film}
-							title="No animations yet"
-							description={
-								project.characters.length === 0
-									? "Create a character first, then add animations"
-									: "Create an animation for one of your characters"
-							}
-							action={
-								project.characters.length > 0
-									? () =>
-											setActionContext({ type: "new-animation", projectId })
-									: undefined
-							}
-							actionLabel="Create Animation"
-						/>
-					) : (
-						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-							{project.animations.map((animation) => (
-								<AnimationCard
-									key={animation.id}
-									animation={animation}
-									onClick={() =>
-										openTab("animation", animation.id, animation.name)
-									}
-									onEdit={() =>
-										setActionContext({ type: "edit-animation", animation })
-									}
-									onDelete={async () => {
-										const res = await fetch(`/api/animations/${animation.id}`, { method: "DELETE" });
-										if (res.ok) {
-											toast.success(`Animation "${animation.name}" deleted`);
-											await refreshCurrentProject();
-										} else {
-											toast.error("Failed to delete animation");
-										}
-									}}
-								/>
-							))}
-						</div>
-					)}
-				</section>
 			</div>
 		</ScrollArea>
 	);
@@ -511,114 +446,6 @@ function CharacterCard({
 					{character.assets.length} variation
 					{character.assets.length !== 1 ? "s" : ""}
 				</p>
-			</div>
-		</div>
-	);
-}
-
-function AnimationCard({
-	animation,
-	onClick,
-	onEdit,
-	onDelete,
-}: {
-	animation: AnimationWithFrames;
-	onClick: () => void;
-	onEdit: () => void;
-	onDelete: () => Promise<void>;
-}) {
-	const firstFrame = animation.frames[0]?.asset?.filePath;
-	const [confirmDelete, setConfirmDelete] = useState(false);
-	const [isDeleting, setIsDeleting] = useState(false);
-
-	const handleDelete = async () => {
-		setIsDeleting(true);
-		await onDelete();
-		setIsDeleting(false);
-		setConfirmDelete(false);
-	};
-
-	return (
-		<div
-			className={cn(
-				"group relative rounded-lg border border-border bg-card overflow-hidden cursor-pointer",
-				"hover:border-primary/50 hover:shadow-md transition-all",
-			)}
-			onClick={onClick}
-			onKeyDown={(e) => {
-				if (e.key === "Enter" || e.key === " ") onClick();
-			}}
-		>
-			<div className="flex">
-				<div className="w-20 h-20 bg-muted flex-shrink-0">
-					{firstFrame ? (
-						<img
-							src={firstFrame}
-							alt={animation.name}
-							className="w-full h-full object-cover"
-						/>
-					) : (
-						<div className="w-full h-full flex items-center justify-center">
-							<Film className="h-6 w-6 text-muted-foreground" />
-						</div>
-					)}
-				</div>
-				<div className="flex-1 p-3 min-w-0">
-					<h3 className="font-medium text-sm truncate">{animation.name}</h3>
-					<p className="text-xs text-muted-foreground truncate">
-						{animation.character.name}
-					</p>
-					<p className="text-xs text-muted-foreground mt-1">
-						{animation.frames.length} frame
-						{animation.frames.length !== 1 ? "s" : ""}
-					</p>
-				</div>
-				<div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-					{confirmDelete ? (
-						<div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-							<Button
-								variant="destructive"
-								size="icon"
-								className="h-7 w-7"
-								onClick={handleDelete}
-								disabled={isDeleting}
-							>
-								{isDeleting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
-							</Button>
-							<Button
-								variant="secondary"
-								size="icon"
-								className="h-7 w-7"
-								onClick={() => setConfirmDelete(false)}
-								disabled={isDeleting}
-							>
-								<X className="h-3 w-3" />
-							</Button>
-						</div>
-					) : (
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button
-									variant="secondary"
-									size="icon"
-									className="h-7 w-7"
-									onClick={(e) => e.stopPropagation()}
-								>
-									<MoreVertical className="h-4 w-4" />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end">
-								<DropdownMenuItem onSelect={onEdit}>Edit</DropdownMenuItem>
-								<DropdownMenuItem
-									className="text-destructive"
-									onSelect={() => setConfirmDelete(true)}
-								>
-									Delete
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
-					)}
-				</div>
 			</div>
 		</div>
 	);

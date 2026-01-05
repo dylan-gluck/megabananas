@@ -6,10 +6,16 @@ import { editImage, type ImageContent } from "@/lib/gemini";
 import { prisma } from "@/lib/prisma";
 
 // Layout configuration for different frame counts
-function getLayoutConfig(frameCount: number): { aspectRatio: string; cols: number; rows: number } {
+function getLayoutConfig(frameCount: number): {
+  aspectRatio: string;
+  cols: number;
+  rows: number;
+} {
   // Available ratios: 1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9
-  if (frameCount <= 4) return { aspectRatio: "21:9", cols: frameCount, rows: 1 };
-  if (frameCount <= 8) return { aspectRatio: "21:9", cols: frameCount, rows: 1 };
+  if (frameCount <= 4)
+    return { aspectRatio: "21:9", cols: frameCount, rows: 1 };
+  if (frameCount <= 8)
+    return { aspectRatio: "21:9", cols: frameCount, rows: 1 };
   if (frameCount <= 12) return { aspectRatio: "3:2", cols: 6, rows: 2 };
   if (frameCount <= 16) return { aspectRatio: "16:9", cols: 8, rows: 2 };
   return { aspectRatio: "3:2", cols: 8, rows: 3 }; // 24 frames: 8x3
@@ -23,9 +29,10 @@ function buildSpritesheetPrompt(
 ): string {
   const { cols, rows } = getLayoutConfig(frameCount);
 
-  const gridDesc = rows === 1
-    ? `${cols} columns, 1 row (single horizontal strip)`
-    : `${cols} columns, ${rows} rows`;
+  const gridDesc =
+    rows === 1
+      ? `${cols} columns, 1 row (single horizontal strip)`
+      : `${cols} columns, ${rows} rows`;
 
   return `EXACTLY ${frameCount} FRAMES. NOT ${frameCount - 1}, NOT ${frameCount + 1}. EXACTLY ${frameCount}.
 
@@ -116,7 +123,12 @@ export async function POST(request: NextRequest) {
     const angleFragment = angleOption ? ` ${angleOption.promptFragment}` : "";
 
     // Build structured prompt with narrative description
-    const prompt = buildSpritesheetPrompt(name, description, frameCount, angleFragment);
+    const prompt = buildSpritesheetPrompt(
+      name,
+      description,
+      frameCount,
+      angleFragment,
+    );
 
     // Get layout configuration for frame count
     const { aspectRatio, cols, rows } = getLayoutConfig(frameCount);
@@ -157,7 +169,14 @@ export async function POST(request: NextRequest) {
         systemPrompt: prompt,
         userPrompt: name,
         referenceAssetIds: [characterAssetId],
-        generationSettings: { description, frameCount, anglePreset, aspectRatio, cols, rows },
+        generationSettings: {
+          description,
+          frameCount,
+          anglePreset,
+          aspectRatio,
+          cols,
+          rows,
+        },
         characterId,
       },
     });

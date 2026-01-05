@@ -111,7 +111,7 @@ export interface CharacterWithAssets extends Character {
   primaryAsset: Asset | null;
   assets: Asset[];
   animations: AnimationWithFrames[];
-  spriteSheets?: SpriteSheetWithAsset[];
+  spriteSheets: SpriteSheetWithAsset[];
 }
 
 export interface SpriteSheetWithAsset extends SpriteSheet {
@@ -121,8 +121,6 @@ export interface SpriteSheetWithAsset extends SpriteSheet {
 
 export interface ProjectWithRelations extends Project {
   characters: CharacterWithAssets[];
-  animations: AnimationWithFrames[];
-  spriteSheets: SpriteSheetWithAsset[];
 }
 
 // Extended animation type with character's primary asset and variations for generation

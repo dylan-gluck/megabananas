@@ -244,6 +244,7 @@ export function CharacterView({ characterId }: CharacterViewProps) {
 							</span>
 							<span>{character.assets.length} variations</span>
 							<span>{character.animations.length} animations</span>
+							<span>{character.spriteSheets.length} sprite sheets</span>
 						</div>
 					</div>
 				</div>

@@ -19,29 +19,20 @@ export async function GET(
             animations: {
               orderBy: { updatedAt: "desc" },
               include: {
+                character: true,
                 frames: {
                   orderBy: { frameIndex: "asc" },
                   include: { asset: true },
                 },
               },
             },
-          },
-        },
-        animations: {
-          orderBy: { updatedAt: "desc" },
-          include: {
-            character: true,
-            frames: {
-              orderBy: { frameIndex: "asc" },
-              include: { asset: true },
+            spriteSheets: {
+              orderBy: { updatedAt: "desc" },
+              include: {
+                asset: true,
+                character: true,
+              },
             },
-          },
-        },
-        spriteSheets: {
-          orderBy: { updatedAt: "desc" },
-          include: {
-            asset: true,
-            character: true,
           },
         },
       },
