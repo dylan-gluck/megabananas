@@ -26,6 +26,12 @@ model Project {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  // Art style metadata
+  artStyle     String?   // e.g., "pixel-art", "anime", "realistic"
+  theme        String?   // e.g., "fantasy", "sci-fi", "medieval"
+  colorPalette String[]  // Array of hex colors
+  styleNotes   String?   // Additional style guidance text
+
   // Relations
   assets       Asset[]
   characters   Character[]

@@ -150,6 +150,7 @@ export function NewCharacterForm({ projectId }: NewCharacterFormProps) {
 					systemPrompt,
 					referenceImages,
 					aspectRatio: "1:1",
+					projectId,
 				}),
 			});
 

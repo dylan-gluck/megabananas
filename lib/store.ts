@@ -40,6 +40,11 @@ export interface Project {
   thumbnailId: string | null;
   createdAt: Date;
   updatedAt: Date;
+  // Art style metadata
+  artStyle: string | null;
+  theme: string | null;
+  colorPalette: string[];
+  styleNotes: string | null;
 }
 
 export interface Character {

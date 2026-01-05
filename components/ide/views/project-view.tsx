@@ -13,7 +13,9 @@ import {
 	ImagePlus,
 	Trash2,
 	Upload,
+	Palette,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -172,6 +174,42 @@ export function ProjectView({ projectId }: ProjectViewProps) {
 						<span>{project.animations.length} animations</span>
 					</div>
 				</div>
+
+				{/* Project Style Section */}
+				{(project.artStyle || project.theme || project.colorPalette?.length > 0 || project.styleNotes) && (
+					<section className="rounded-lg border border-border bg-card p-4 space-y-3">
+						<h2 className="text-sm font-semibold flex items-center gap-2">
+							<Palette className="h-4 w-4 text-primary" />
+							Project Style
+						</h2>
+						<div className="flex flex-wrap gap-2">
+							{project.artStyle && (
+								<Badge variant="secondary">{project.artStyle}</Badge>
+							)}
+							{project.theme && (
+								<Badge variant="outline">{project.theme}</Badge>
+							)}
+						</div>
+						{project.colorPalette && project.colorPalette.length > 0 && (
+							<div className="flex items-center gap-2">
+								<span className="text-xs text-muted-foreground">Palette:</span>
+								<div className="flex gap-1">
+									{project.colorPalette.map((color, idx) => (
+										<div
+											key={idx}
+											className="w-5 h-5 rounded border border-border"
+											style={{ backgroundColor: color }}
+											title={color}
+										/>
+									))}
+								</div>
+							</div>
+						)}
+						{project.styleNotes && (
+							<p className="text-sm text-muted-foreground">{project.styleNotes}</p>
+						)}
+					</section>
+				)}
 
 				{/* Characters Grid */}
 				<section className="space-y-4">
